@@ -15,13 +15,13 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 ## 📋 Fases de Desenvolvimento
 
 ### Fase 1: Fundação do Ambiente, Manifesto e Core Guardrails
-- [ ] Criar estrutura oficial de diretórios (`src/core/`, `src/stage1_...` a `stage6_...`, `assets/`, `remotion_graphics/`, `workspace/`)
-- [ ] Configurar `config.yaml` calibrado para o hardware e `.env.example`
-- [ ] Criar `requirements.txt` com versões pinadas e compatíveis com PyTorch CUDA
-- [ ] Implementar `src/core/manifest.py` com modelos Pydantic v2 para o `project_manifest.json`
-- [ ] Implementar `src/core/vram_guard.py` (rotinas de limpeza CUDA, gc, unload Ollama e ComfyUI)
-- [ ] Inicializar o projeto `remotion_graphics/` (TypeScript, React, Tailwind)
-- [ ] **Gating Test:** Validação dos schemas Pydantic e teste unitário do `vram_guard.py`
+- [x] Criar estrutura oficial de diretórios (`src/core/`, `src/stage1_...` a `stage6_...`, `assets/`, `remotion_graphics/`, `workspace/`)
+- [x] Configurar `config.yaml` calibrado para o hardware e `.env.example`
+- [x] Criar `requirements.txt` com versões pinadas e compatíveis com PyTorch CUDA
+- [x] Implementar `src/core/manifest.py` com modelos Pydantic v2 para o `project_manifest.json`
+- [x] Implementar `src/core/vram_guard.py` (rotinas de limpeza CUDA, gc, unload Ollama e ComfyUI)
+- [x] Inicializar o projeto `remotion_graphics/` (TypeScript, React, Remotion CLI configurado e testado)
+- [x] **Gating Test:** Validação dos schemas Pydantic, teste unitário do `vram_guard.py` e renderização headless de teste no Remotion concluídos com 100% de sucesso.
 
 ### Fase 2: Roteiro, Narração e Ritmo (Estágios 1 e 2)
 - [ ] Implementar `src/stage1_director/script_director.py` com LiteLLM (Gemini 2.5 Flash / Groq) e fallback Ollama

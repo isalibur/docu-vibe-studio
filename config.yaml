@@ -1,0 +1,56 @@
+# ==============================================================================
+# DOCU-VIBE-STUDIO: Configuração Calibrada de Hardware e Pipelines
+# Hardware Alvo: AMD Ryzen 5 5500 (6C/12T) | 24 GB RAM | RTX 3060 (12 GB VRAM)
+# ==============================================================================
+
+hardware:
+  gpu_vram_gb: 12
+  system_ram_gb: 24
+  cpu_threads_limit: 8          # Deixa 4 threads livres no Ryzen 5 5500 para o SO
+  ffmpeg_encoder: "h264_nvenc"  # Chip encoder dedicado da RTX 3060
+  ffmpeg_preset: "p4"           # Preset NVENC balanceado (qualidade x velocidade)
+  ffmpeg_cq: 19                 # Constant Quality 19 (qualidade visual excelente)
+  ffmpeg_pix_fmt: "yuv420p"
+
+project_defaults:
+  fps: 30
+  resolution:
+    width: 1920
+    height: 1080
+  min_scene_duration_sec: 4.0
+  max_scene_duration_sec: 8.5
+
+llm:
+  primary_provider: "gemini/gemini-2.5-flash"  # Custo zero, alta velocidade e zero VRAM
+  fallback_provider: "groq/llama-3.3-70b-versatile"
+  local_fallback: "ollama/qwen2.5:7b-instruct-q4_K_M"
+  ollama_keep_alive: 0          # Descarrega da VRAM imediatamente após responder
+
+tts:
+  default_engine: "edge-tts"    # Opções: "edge-tts" (cloud grátis) ou "chatterbox" (local GPU)
+  edge_voice: "pt-BR-AntonioNeural"
+  device: "cuda"
+
+audio_processing:
+  auto_editor:
+    min_silence_duration: 0.35  # segundos
+    margin: 0.12                # segundos de transição suave
+  ducking:
+    bgm_volume_normal: 0.25     # volume quando não há fala
+    bgm_volume_ducked: 0.06     # volume comprimido durante a fala
+    attack_ms: 250
+    release_ms: 600
+
+captions:
+  whisper_model: "large-v3-turbo"
+  compute_type: "int8_float16"  # ~3.2 GB VRAM na RTX 3060
+  batch_size: 16
+  words_per_block: 4
+  highlight_color_hex: "&H00FFFF&" # Ciano de alto impacto para a palavra falada
+
+visuals:
+  comfyui_url: "http://127.0.0.1:8188"
+  flux_gguf_quant: "Q4_K_M"
+  remotion_concurrency: 4       # Balanceado para 6 núcleos / 24 GB RAM
+  enable_ai_video_generation: false # Mantido false para evitar gargalo e OOM
+  rembg_model: "briaai/RMBG-2.0"

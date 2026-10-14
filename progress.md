@@ -16,12 +16,18 @@
 - [x] Instalação do utilitário **RTK v0.50.0** (`rtk-ai.rtk`) globalmente no Windows via `winget`.
 - [x] Criação dos artefatos persistentes de governança: `task_plan.md`, `findings.md` e `progress.md`.
 - [x] Repositório oficial Git configurado e sincronizado no GitHub: [isalibur/docu-vibe-studio](https://github.com/isalibur/docu-vibe-studio).
+- [x] **Fase 1 Concluída com Sucesso:**
+  - Árvore de diretórios modular criada (`src/core/`, `src/stage1_...` a `stage6_...`, `assets/`, `workspace/`).
+  - Arquivo `config.yaml` e `.env.example` criados e calibrados para o hardware (8 threads / NVENC CQ 19).
+  - Ambiente virtual `.venv` configurado e dependências essenciais instaladas (`pydantic`, `pyyaml`, `python-dotenv`, `requests`).
+  - `src/core/manifest.py` implementado com Pydantic v2 (Single Source of Truth).
+  - `src/core/vram_guard.py` implementado e testado para isolamento de VRAM da GPU.
+  - Projeto `remotion_graphics/` inicializado e validado: teste de renderização headless de vídeo MP4 concluído em ~2.5 segundos.
 
 ---
 
 ## Próximos Passos Imediatos:
-1. Executar a **Fase 1**:
-   * Criar a estrutura completa de pastas do projeto (`src/core/`, `src/stage1_...` a `stage6_...`, `assets/`, `workspace/`).
-   * Criar o arquivo `config.yaml` calibrado para a RTX 3060 (limite de threads, NVENC, parâmetros de VRAM).
-   * Implementar `src/core/manifest.py` (Pydantic v2) e `src/core/vram_guard.py`.
-   * Inicializar o projeto `remotion_graphics/`.
+1. Executar a **Fase 2 (Roteiro, Narração e Ritmo)**:
+   * Instalar `litellm`, `edge-tts` e `auto-editor`.
+   * Criar `src/stage1_director/script_director.py` com suporte a Gemini/Groq e prompt de Diretor de Cinema.
+   * Criar `src/stage2_audio/tts_engine.py` e `src/stage2_audio/silence_cutter.py`.
