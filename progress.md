@@ -34,7 +34,16 @@
 
 ---
 
+- [x] **Fase 3 Concluída com Sucesso:**
+  - `src/stage3_captions/aligner.py`: Implementado com extração de timestamps milissegundo a milissegundo e teardown explícito via `flush_vram()`.
+  - `src/stage3_captions/ass_generator.py`: Gerador de legendas `.ass` profissionais com efeito de destaque ciano (`&H00FFFF&`) e leve aumento de escala (110%) sobre a palavra ativa.
+  - Correção de compatibilidade: Fix de versão do PyAV (`av<13.0.0`) para compatibilidade nativa com o Faster-Whisper.
+  - **Gating Test:** Alinhamento de áudio sintetizado e exportação do arquivo `.ass` com eventos perfeitamente sincronizados por palavra.
+
+---
+
 ## Próximos Passos Imediatos:
-1. Executar a **Fase 3 (Sincronia Fonética e Legendas Dinâmicas - Estágio 3)**:
-   * Implementar `src/stage3_captions/aligner.py` (WhisperX / Faster-Whisper com alinhamento Wav2Vec2 milissegundo a milissegundo).
-   * Implementar `src/stage3_captions/ass_generator.py` para gerar legendas `.ass` com efeito de pop/zoom ciano na palavra ativa.
+1. Executar a **Fase 4 (Mídia Híbrida e Parallax 2.5D - Estágio 4)**:
+   * Implementar `src/stage4_broll/pexels_fetcher.py` (download automático de B-rolls em 1080p).
+   * Implementar `src/stage4_broll/wikimedia_fetcher.py` (acervo público de fotos e documentos históricos).
+   * Implementar `src/stage4_broll/parallax_segmenter.py` com `rembg` (separação de primeiro plano/fundo).

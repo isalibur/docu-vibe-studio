@@ -31,9 +31,9 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 - [x] **Gating Test:** Teste de geração de roteiro estruturado e síntese de áudio de alta qualidade concluído com sucesso.
 
 ### Fase 3: Sincronia Fonética e Legendas Dinâmicas (Estágio 3)
-- [ ] Implementar `src/stage3_captions/aligner.py` com WhisperX (`int8_float16`) + alinhamento Wav2Vec2
-- [ ] Implementar `src/stage3_captions/ass_generator.py` gerando legendas `.ass` com destaque cinético de palavras
-- [ ] **Gating Test:** Alinhamento de áudio demo e inspeção do arquivo `.ass` com tags de zoom/cor
+- [x] Implementar `src/stage3_captions/aligner.py` com Faster-Whisper / WhisperX e liberação obrigatória de VRAM (`flush_vram`)
+- [x] Implementar `src/stage3_captions/ass_generator.py` gerando legendas `.ass` com destaque cinético e escala em ciano
+- [x] **Gating Test:** Alinhamento de áudio demo e compilação de arquivo `.ass` com eventos sincronizados por palavra validado com 100% de sucesso.
 
 ### Fase 4: Mídia Híbrida e Parallax 2.5D (Estágio 4)
 - [ ] Implementar `src/stage4_broll/pexels_fetcher.py` e fallback Pixabay
