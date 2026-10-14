@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Docu-Vibe Studio</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-[#0D0F12] text-[#F8FAFC] antialiased p-6 font-sans">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between border-b border-white/10 pb-5 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center font-bold text-lg shadow-lg">
+        🎬
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          Docu-Vibe Studio <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-mono border border-amber-500/30">v2.0 Hybrid</span>
+        </h1>
+        <p class="text-xs text-gray-400">Estúdio Inteligente de Documentários • RTX 3060 NVENC Ativo</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="hardware-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        RTX 3060 NVENC Pronta
+      </span>
+      <button onclick="refreshProjects()" class="bg-white/10 hover:bg-white/15 text-xs px-3 py-1.5 rounded-lg border border-white/10 transition">
+        🔄 Atualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- Layout Principal -->
+  <main class="grid grid-cols-12 gap-6">
+
+    <!-- COLUNA DA ESQUERDA: FORMULÁRIO DE GERAÇÃO (5 Cols) -->
+    <section class="col-span-12 lg:col-span-5 space-y-5">
+      
+      <!-- Card 1: Tema & Roteiro -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+          <span>1.</span> Roteiro & Narrativa
+        </h2>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-300 mb-1.5">Tema do Documentário</label>
+          <textarea id="input-topic" rows="3" class="w-full bg-[#0D0F12] border border-white/10 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition" placeholder="Ex: O Escândalo da Enron e o Colapso das Ações em Wall Street..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-300 mb-1.5">Tom da Narrativa</label>
+            <select id="select-tone" class="w-full bg-[#0D0F12] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+              <option value="investigative" selected>Investigativo / Tensão (Vox)</option>
+              <option value="epic">Histórico / Épico (Lemmino)</option>
+              <option value="economic">Econômico / Analítico (Magnates)</option>
+              <option value="fast">Rápido / Dinâmico (TikTok / Reels)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-300 mb-1.5">Voz da Narração (TTS)</label>
+            <select id="select-voice" class="w-full bg-[#0D0F12] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+              <option value="pt-BR-AntonioNeural" selected>pt-BR-Antonio (Grave / Jornalístico)</option>
+              <option value="pt-BR-FranciscaNeural">pt-BR-Francisca (Expressiva / Formal)</option>
+              <option value="en-US-ChristopherNeural">en-US-Christopher (Internacional)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <label class="text-xs text-gray-300 flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="check-silence" checked class="rounded bg-[#0D0F12] border-white/20 text-amber-500 focus:ring-0">
+            <span>Remover pausas e silêncios (>0.35s)</span>
+          </label>
+          <span class="text-[11px] text-amber-400/80 font-mono">auto-editor ativo</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Fontes de Mídia Híbrida -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+          <span>2.</span> Modo Híbrido de Mídia
+        </h2>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 rounded-lg border border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div>
+              <span class="font-medium text-white block">📂 Pasta de Mídia Local (Opcional)</span>
+              <span class="text-gray-400 text-[11px]">Busca primeiro na sua biblioteca em disco</span>
+            </div>
+            <input type="text" id="input-local-folder" placeholder="Ex: E:/Brolls" class="bg-[#0D0F12] border border-white/10 rounded px-2.5 py-1 text-white text-[11px] w-36">
+          </div>
+
+          <div class="p-3 rounded-lg border border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div>
+              <span class="font-medium text-white block">🏛️ Wikimedia Commons (Histórico)</span>
+              <span class="text-gray-400 text-[11px]">Download de fotos históricas de domínio público</span>
+            </div>
+            <span class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded font-mono">Integrado</span>
+          </div>
+
+          <div class="p-3 rounded-lg border border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div>
+              <span class="font-medium text-white block">🎭 Efeito Parallax 2.5D (rembg)</span>
+              <span class="text-gray-400 text-[11px]">Recorte de primeiro plano e câmera contínua sem jitter</span>
+            </div>
+            <span class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded font-mono">Ativo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Disparo da Produção -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-3">
+        <button id="btn-generate" onclick="startGeneration()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold text-sm rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2">
+          <span>⚡ Gerar Documentário Automaticamente</span>
+        </button>
+
+        <!-- Barra de Progresso em Tempo Real -->
+        <div id="progress-container" class="hidden space-y-2 pt-2">
+          <div class="flex justify-between text-xs font-mono text-gray-400">
+            <span id="status-log">Processando...</span>
+            <span id="status-percent">0%</span>
+          </div>
+          <div class="w-full bg-[#0D0F12] rounded-full h-2 overflow-hidden border border-white/10">
+            <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-cyan-400 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- COLUNA DA DIREITA: PLAYER E PROJETOS RECENTES (7 Cols) -->
+    <section class="col-span-12 lg:col-span-7 space-y-5">
+      
+      <!-- Card: Player Master -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <span>📺</span> Player do Documentário Master
+          </h2>
+          <span class="text-xs font-mono text-gray-400">Full HD 1080p • 30 FPS • NVENC H.264</span>
+        </div>
+
+        <div class="relative w-full aspect-video bg-black rounded-lg border border-white/10 overflow-hidden flex items-center justify-center shadow-2xl">
+          <video id="main-video" controls class="w-full h-full object-contain" src="/workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4">
+            Seu navegador não suporta a tag de vídeo.
+          </video>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span id="current-project-title" class="text-xs text-gray-400 font-mono">Vídeo Piloto: O Colapso Financeiro de 2008</span>
+          <div class="flex gap-2">
+            <a id="btn-download-video" href="/workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4" download class="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded text-xs text-white border border-white/10 transition">
+              ⬇️ Baixar MP4
+            </a>
+            <a id="btn-download-otio" href="/workspace/doc_pilot_test/output/doc_pilot_test_timeline.otio" download class="px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded text-xs border border-cyan-500/20 transition">
+              ✂️ Abrir no Kdenlive
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Projetos Gerados -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-3">
+        <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+          <span>📁</span> Projetos na Workspace
+        </h2>
+
+        <div id="projects-list" class="space-y-2 max-h-[220px] overflow-y-auto pr-1 text-xs">
+          <div class="p-3 rounded-lg bg-[#0D0F12] border border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🎬</span>
+              <div>
+                <span class="font-medium text-white block">doc_pilot_test</span>
+                <span class="text-gray-400 text-[11px]">O Colapso Financeiro de 2008 • 3 cenas</span>
+              </div>
+            </div>
+            <button onclick="loadProjectVideo('/workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4', 'O Colapso Financeiro de 2008')" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded hover:bg-amber-500/30 transition">
+              Assistir
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    let pollInterval = null;
+
+    async function startGeneration() {
+      const topic = document.getElementById('input-topic').value.trim();
+      if (!topic) {
+        alert("Por favor, digite um tema para o documentário.");
+        return;
+      }
+
+      const reqData = {
+        topic: topic,
+        tone: document.getElementById('select-tone').value,
+        voice: document.getElementById('select-voice').value,
+        remove_silence: document.getElementById('check-silence').checked,
+        local_assets_folder: document.getElementById('input-local-folder').value.trim() || null,
+        export_kdenlive: true
+      };
+
+      document.getElementById('btn-generate').disabled = true;
+      document.getElementById('btn-generate').classList.add('opacity-50');
+      document.getElementById('progress-container').classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        
+        // Inicia polling de status
+        pollInterval = setInterval(checkStatus, 1500);
+      } catch (err) {
+        alert("Erro ao iniciar produção: " + err.message);
+        document.getElementById('btn-generate').disabled = false;
+        document.getElementById('btn-generate').classList.remove('opacity-50');
+      }
+    }
+
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const gen = data.generation;
+
+        document.getElementById('status-log').innerText = gen.log_message;
+        document.getElementById('status-percent').innerText = gen.progress_percent + "%";
+        document.getElementById('progress-bar').style.width = gen.progress_percent + "%";
+
+        if (gen.status === 'completed') {
+          clearInterval(pollInterval);
+          document.getElementById('btn-generate').disabled = false;
+          document.getElementById('btn-generate').classList.remove('opacity-50');
+          
+          if (gen.final_video_url) {
+            loadProjectVideo(gen.final_video_url, gen.project_id);
+          }
+          refreshProjects();
+        } else if (gen.status === 'error') {
+          clearInterval(pollInterval);
+          document.getElementById('btn-generate').disabled = false;
+          document.getElementById('btn-generate').classList.remove('opacity-50');
+          alert("Ocorreu um erro: " + gen.log_message);
+        }
+      } catch (e) {
+        console.error("Erro ao checar status:", e);
+      }
+    }
+
+    function loadProjectVideo(videoUrl, title) {
+      const video = document.getElementById('main-video');
+      video.src = videoUrl;
+      video.play();
+      document.getElementById('current-project-title').innerText = title;
+      document.getElementById('btn-download-video').href = videoUrl;
+    }
+
+    async function refreshProjects() {
+      try {
+        const res = await fetch('/api/projects');
+        const list = await res.json();
+        const container = document.getElementById('projects-list');
+        if (list.length === 0) return;
+
+        container.innerHTML = list.map(p => `
+          <div class="p-3 rounded-lg bg-[#0D0F12] border border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🎬</span>
+              <div>
+                <span class="font-medium text-white block">${p.project_id}</span>
+                <span class="text-gray-400 text-[11px]">${p.title} • ${p.scenes_count} cenas</span>
+              </div>
+            </div>
+            ${p.has_final_video ? `
+              <button onclick="loadProjectVideo('${p.video_url}', '${p.title}')" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded hover:bg-amber-500/30 transition">
+                Assistir
+              </button>
+            ` : '<span class="text-gray-500 text-[11px]">Em produção</span>'}
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error("Erro ao listar projetos:", e);
+      }
+    }
+
+    // Inicialização
+    refreshProjects();
+  </script>
+</body>
+</html>
