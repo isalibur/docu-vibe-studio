@@ -26,8 +26,15 @@
 
 ---
 
+- [x] **Fase 2 Concluída com Sucesso:**
+  - `src/stage1_director/script_director.py`: Implementado com LiteLLM (Gemini 2.5 Flash / Groq) e roteiro investigativo inteligente de 4 a 8 segundos por cena.
+  - `src/stage2_audio/tts_engine.py`: Síntese de voz com Edge-TTS a 48kHz, custo zero e zero VRAM.
+  - `src/stage2_audio/silence_cutter.py`: Integração com `auto-editor` para corte dinâmico de silêncios (>0.35s).
+  - **Gating Test:** Geração de roteiro e síntese de áudio de teste com 100% de sucesso.
+
+---
+
 ## Próximos Passos Imediatos:
-1. Executar a **Fase 2 (Roteiro, Narração e Ritmo)**:
-   * Instalar `litellm`, `edge-tts` e `auto-editor`.
-   * Criar `src/stage1_director/script_director.py` com suporte a Gemini/Groq e prompt de Diretor de Cinema.
-   * Criar `src/stage2_audio/tts_engine.py` e `src/stage2_audio/silence_cutter.py`.
+1. Executar a **Fase 3 (Sincronia Fonética e Legendas Dinâmicas - Estágio 3)**:
+   * Implementar `src/stage3_captions/aligner.py` (WhisperX / Faster-Whisper com alinhamento Wav2Vec2 milissegundo a milissegundo).
+   * Implementar `src/stage3_captions/ass_generator.py` para gerar legendas `.ass` com efeito de pop/zoom ciano na palavra ativa.

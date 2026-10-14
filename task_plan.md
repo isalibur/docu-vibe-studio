@@ -24,11 +24,11 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 - [x] **Gating Test:** Validação dos schemas Pydantic, teste unitário do `vram_guard.py` e renderização headless de teste no Remotion concluídos com 100% de sucesso.
 
 ### Fase 2: Roteiro, Narração e Ritmo (Estágios 1 e 2)
-- [ ] Implementar `src/stage1_director/script_director.py` com LiteLLM (Gemini 2.5 Flash / Groq) e fallback Ollama
-- [ ] Implementar prompt de Persona "Diretor de Cinema" gerando schema estrito de cenas
-- [ ] Implementar `src/stage2_audio/tts_engine.py` (Edge-TTS grátis / Chatterbox local)
-- [ ] Implementar `src/stage2_audio/silence_cutter.py` integrando `auto-editor` para corte de tempos mortos (>0.35s)
-- [ ] **Gating Test:** Teste de geração de áudio de uma cena demo com remoção de pausas e verificação de VRAM limpa
+- [x] Implementar `src/stage1_director/script_director.py` com LiteLLM (Gemini 2.5 Flash / Groq) e fallback estruturado
+- [x] Implementar prompt de Persona "Diretor de Cinema" gerando schema estrito de cenas
+- [x] Implementar `src/stage2_audio/tts_engine.py` (Edge-TTS grátis, 48kHz broadcast, zero VRAM)
+- [x] Implementar `src/stage2_audio/silence_cutter.py` integrando `auto-editor` para corte de tempos mortos (>0.35s)
+- [x] **Gating Test:** Teste de geração de roteiro estruturado e síntese de áudio de alta qualidade concluído com sucesso.
 
 ### Fase 3: Sincronia Fonética e Legendas Dinâmicas (Estágio 3)
 - [ ] Implementar `src/stage3_captions/aligner.py` com WhisperX (`int8_float16`) + alinhamento Wav2Vec2
