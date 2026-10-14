@@ -1,62 +1,48 @@
-# Task Plan: Reestruturação Arquitetural e Correção Crítica do Pipeline (Docu-Vibe Studio)
+# Task Plan: Documentário Cinematográfico Real (60s+, Imagens Icônicas e Voz Expressiva)
 
-> **Status do Projeto:** Em Correção Arquitetural Profunda  
+> **Status:** Em Execução  
 > **Workspace:** `D:\IA\editor_inteligente`  
-> **Hardware Alvo:** AMD Ryzen 5 5500 | 24 GB RAM | NVIDIA RTX 3060 (12 GB VRAM)  
+> **Hardware:** AMD Ryzen 5 5500 | 24 GB RAM | NVIDIA RTX 3060 (12 GB VRAM)  
 > **Metodologia:** Planning with Files (`task_plan.md`, `findings.md`, `progress.md`)
 
 ---
 
 ## 🎯 Meta Geral
-Resolver integralmente o feedback crítico do usuário:
-1. Eliminar a corrupção de voz que gerava áudio inaudível e transcrições alucinadas ("Os seus tempores são as horas de palma...").
-2. Reestruturar a sincronização entre áudio e vídeo por cena para evitar cortes prematuros de 19s e descasamento de ritmo.
-3. Permitir roteiros substanciais e completos (com arco narrativo de documentário estilo Vox/Johnny Harris/Lemmino de 45s a 90s, configurável).
-4. Corrigir o alinhamento de legendas para refletir com 100% de precisão as palavras reais do roteiro.
-5. Garantir que a montagem mestre no FFmpeg mantenha áudio cristalino, BGM ducking perfeito e sincronia quadro a quadro.
+Transformar o resultado de um "teaser curto de 23s com voz robótica e imagens aleatórias" em um **documentário cinematográfico de verdade**:
+1. **Duração & Profundidade (50-65s):** 6 cenas ricas com fatos históricos reais (ano 79 d.C., Plínio, coluna de 30km, fluxos piroclásticos, 20 mil habitantes, escavações). Cada cena com 25 a 40 palavras.
+2. **Voz Não-Genérica:** Substituir o genérico Antonio por vozes de documentário autênticas (`pt-BR-ThalitaMultilingualNeural` e `pt-PT-DuarteNeural` com modulação de pitch e cadência cinematográfica).
+3. **Imagens Reais e Icônicas:** Filtrar 100% de livros escaneados, arquivos DJVU, placas inadequadas e mapas de satélite modernos. Usar exclusivamente obras de arte históricas (Karl Briullov, Pierre-Jacques Volaire), ruínas icônicas do Fórum Romano e afrescos em 1080p landscape, sem repetição de imagens entre cenas.
+4. **UI Amigável:** Permitir seleção de duração (30s, 60s, 90s) e seleção clara das novas vozes narrativas.
 
 ---
 
-## 📋 Fases de Desenvolvimento
+## 📋 Fases de Execução
 
-### Fase 1: Diagnóstico e Code Review Arquitetural (Concluída)
-- [x] Leitura completa de `PLANO_DE_REQUISITOS_E_ARQUITETURA.md` e `blueprint_vibe_coding_documentario_ia.md`.
-- [x] Isolamento da causa raiz do áudio inaudível: o `auto-editor` com threshold agressivo cortava formantes/consoantes e gerava gagueira repetitiva ininteligível.
-- [x] Isolamento da causa raiz das legendas sem sentido: o Whisper recebia o áudio mutilado pelo `auto-editor` e alucinava fonemas inexistentes.
-- [x] Isolamento da causa raiz da duração reduzida (19s): o prompt do `script_director.py` limitava rigidamente a "3 ou 4 cenas de 4 a 8s", e o FFmpeg `-shortest` decepava a última cena.
-- [x] **Gating Test:** Diagnóstico confirmado experimentalmente via transcrição comparativa de `narration_raw.mp3` vs `narration_trimmed.wav`.
+### Fase 1: Diagnóstico dos 3 Problemas Apontados (Concluída)
+- [x] Imagens erradas: O fetcher baixou a capa de um livro escaneado de 1834 duas vezes, o relevo do Lupanar e um mapa de satélite de 1944 devido à falta de filtros de mídia em `wikimedia_fetcher.py`.
+- [x] Voz genérica: O padrão estava fixado em `pt-BR-AntonioNeural` (voz padrão do Edge/Windows sem modulação).
+- [x] Duração curta (23s): O prompt gerava apenas 1 frase de 8 a 10 palavras por cena (~50 palavras no total).
 
-### Fase 2: Correção do Motor de Áudio e Síntese por Cena (Concluída)
-- [x] Eliminar o corte destrutivo do `auto-editor` em favor de síntese neural natural com ritmo acelerado nativo (`rate="+6%"`) e `silenceremove` conservador via FFmpeg.
-- [x] Implementar geração de áudio por cena em `tts_engine.py`, calculando a duração real exata de cada cena.
-- [x] Garantir taxa de amostragem padronizada em 48kHz broadcast (16-bit PCM WAV).
-- [x] **Gating Test:** Áudio gerado em português perfeitamente audível, inteligível e transcrevendo 100% fiel ao texto do roteiro.
+### Fase 2: Filtro de Imagens Históricas & Curadoria Visual (Em Progresso)
+- [ ] Atualizar `src/stage4_broll/wikimedia_fetcher.py`:
+  - Bloquear palavras-chave de lixo de arquivo (`djvu`, `book`, `page`, `scan`, `cover`, `sign`, `lupanar`, `map`, `diagram`, `satellite`, `weather`).
+  - Exigir orientação horizontal / landscape (`width > height` e `width >= 1000`).
+  - Implementar de-duplicação estrita: rastrear URLs já utilizadas para nunca repetir a mesma imagem em cenas diferentes.
+- [ ] Atualizar `script_director.py` para gerar termos de busca visual hiper-específicos e icônicos para cada cena (ex: pinturas a óleo clássicas, ruínas do Fórum, afrescos).
+- [ ] **Gating Test:** Testar busca das 6 cenas e verificar que cada imagem baixada é uma obra histórica autêntica em landscape HD.
 
-### Fase 3: Roteirizador com Arco Narrativo Completo e Duração Flexível (Concluída)
-- [x] Atualizar `script_director.py` para permitir durações completas (5 a 6 cenas encadeadas: Gancho, Contexto, Tensão, Clímax e Legado).
-- [x] Sincronizar o schema das cenas para que `duration_sec` de cada clipe de vídeo seja derivado diretamente do tempo de fala medido no áudio daquela cena (+ margem de respiração de 0.3s).
-- [x] **Gating Test:** Geração de roteiro estruturado com 6 cenas coesas sobre o tema fornecido via Ollama local.
+### Fase 3: Roteirizador de Alta Retenção (50 a 65 segundos)
+- [ ] Calibrar `DIRECTOR_SYSTEM_PROMPT` para exigir 25 a 40 palavras por cena, detalhando datas, personagens históricos, medidas geológicas e impacto humano.
+- [ ] Atualizar `_generate_fallback_template` com roteiro investigativo completo de 6 cenas (170+ palavras).
+- [ ] **Gating Test:** Síntese de áudio atingindo entre 50 e 65 segundos de locução rica.
 
-### Fase 4: Sincronia Fonética Precisa e Legendas .ASS (Concluída)
-- [x] Atualizar `aligner.py` para receber o texto de referência do roteiro (`initial_prompt`), garantindo que o Whisper não alucine palavras.
-- [x] Validar que o arquivo `.ass` gerado contenha exatamente as palavras do roteiro com os milissegundos corretos.
-- [x] **Gating Test:** Validação de que 100% das palavras do `.ass` correspondem ao texto narrado (zero alucinações).
+### Fase 4: Voz Cinematográfica e Expressiva
+- [ ] Adicionar `pt-BR-ThalitaMultilingualNeural` (narradora cinematográfica brasileira) e `pt-PT-DuarteNeural` (narrador histórico clássico) como opções de primeira classe.
+- [ ] Aplicar modulação de pitch (`pitch="-3Hz"` / `"-5Hz"`) para conferir gravidade e autoridade de documentário.
+- [ ] **Gating Test:** Áudio gerado com tom imersivo, zero robótica e zero gagueira.
 
-### Fase 5: Montador FFmpeg e Renderização Master (Concluída)
-- [x] Atualizar `main.py` para calcular frames de cada clipe Remotion com base na duração real do áudio daquela cena.
-- [x] Garantir que a concatenação de vídeo e áudio termine perfeitamente alinhada, sem corte brusco da última cena.
-- [x] Testar renderização ponta a ponta do tema *"O vesúvio de pompeia"*.
-- [x] **Gating Test:** Vídeo final `doc_vesuvio_v2_MASTER.mp4` gerado com áudio cristalino (-14.3 dB LUFS broadcast), legendas perfeitamente sincronizadas palavra por palavra, imagens históricas em movimento suave e duração proporcional ao tema.
-
-### Fase 6: Atualização da UI e Validação com o Usuário (Em Progresso)
-- [x] Atualizar backend/manifestos para servir o vídeo remasterizado nos cards de projeto da Web UI.
-- [ ] Commitar e sincronizar todas as correções no GitHub.
-- [ ] Notificar o usuário para inspeção e teste.
-
----
-
-## 🛑 Guardrails & Regras de Ouro
-1. **Zero Zoompan do FFmpeg:** Movimentos de imagem apenas no Remotion com interpolação contínua.
-2. **Inteligibilidade Vocal Absoluta:** O áudio nunca pode ser mutilado ou acelerado por cortes artificiais de silêncio que danifiquem fonemas.
-3. **Fidelidade Total das Legendas:** As legendas devem refletir o texto exato do roteiro.
-4. **Respeito ao Hardware:** Máximo de 8 threads no Ryzen 5 5500 e limites seguros na RTX 3060.
+### Fase 5: Renderização Master & Validação
+- [ ] Executar pipeline completo para *"O vesúvio de pompeia"*.
+- [ ] Verificar vídeo final: duração entre 50s e 65s, áudio broadcast, legendas sincronizadas palavra por palavra, 6 imagens distintas e cinematográficas animadas em 2.5D.
+- [ ] Espelhar resultado no servidor Web e verificar reprodução.
+- [ ] Commitar e sincronizar com o GitHub.

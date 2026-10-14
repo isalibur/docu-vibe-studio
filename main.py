@@ -65,7 +65,7 @@ def run_pipeline(
     # ---------------------------------------------------------
     if not stage or stage in ["2", "audio"]:
         logger.info("=== ESTÁGIO 2: SÍNTESE DE VOZ E RITMO CINEMATOGRÁFICO ===")
-        tts = TTSEngine(voice=voice or "pt-BR-AntonioNeural", rate="+6%")
+        tts = TTSEngine(voice=voice or "pt-BR-ThalitaMultilingualNeural")
         audio_dir = workspace_dir / "audio"
         audio_dir.mkdir(parents=True, exist_ok=True)
         cutter = SilenceCutter(target_sample_rate=48000)
@@ -266,6 +266,16 @@ if __name__ == "__main__":
     parser.add_argument("--topic", type=str, default="O Colapso Financeiro de 2008", help="Tema do documentário")
     parser.add_argument("--project-id", type=str, default=None, help="Slug único do projeto")
     parser.add_argument("--stage", type=str, default=None, help="Executa apenas um estágio específico (1 a 6)")
+    parser.add_argument("--voice", type=str, default="pt-BR-ThalitaMultilingualNeural", help="Voz Edge-TTS da narração")
+    parser.add_argument("--tone", type=str, default="investigative", help="Tom da narrativa")
+    parser.add_argument("--local-assets-folder", type=str, default=None, help="Pasta local com imagens/vídeos")
     args = parser.parse_args()
 
-    run_pipeline(topic=args.topic, project_id=args.project_id, stage=args.stage)
+    run_pipeline(
+        topic=args.topic,
+        project_id=args.project_id,
+        stage=args.stage,
+        voice=args.voice,
+        tone=args.tone,
+        local_assets_folder=args.local_assets_folder
+    )

@@ -18,9 +18,9 @@ logger = logging.getLogger("TTSEngine")
 class TTSEngine:
     def __init__(
         self,
-        voice: str = "pt-BR-AntonioNeural",
-        rate: str = "+6%",
-        pitch: str = "+0Hz"
+        voice: str = "pt-BR-ThalitaMultilingualNeural",
+        rate: str = "+4%",
+        pitch: str = "-3Hz"
     ):
         self.voice = voice
         self.rate = rate

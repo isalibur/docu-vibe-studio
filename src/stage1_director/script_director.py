@@ -31,41 +31,41 @@ logger = logging.getLogger("ScriptDirector")
 
 DIRECTOR_SYSTEM_PROMPT = """Você é um Diretor de Cinema e Roteirista Chefe especializado em documentários cinematográficos de alta retenção (estilo Vox, Johnny Harris, Lemmino e BBC).
 
-Sua missão é transformar o TEMA fornecido em um DOCUMENTÁRIO COMPLETO com 5 a 6 cenas encadeadas (aproximadamente 45 a 70 segundos no total).
-Cada cena deve conter de 15 a 30 palavras em português natural, dramático e fluído.
+Sua missão é transformar o TEMA fornecido em um DOCUMENTÁRIO COMPLETO E PROFUNDO de 55 a 70 segundos.
+O documentário deve ter exatamente 6 cenas encadeadas, com 25 a 40 palavras por cena (ritmo investigativo detalhado, citando datas, locais, fatos reais e impacto).
 
-ESTRUTURA DO ARCO NARRATIVO:
-1. Cena 1 - O Gancho (The Hook): Abertura impactante que prende a atenção nos primeiros 3 segundos.
-2. Cena 2 - O Contexto (The Setting): Apresentação do ambiente, da época e do cenário antes do clímax.
-3. Cena 3 - A Tensão Crescente (The Escalation): Os primeiros sinais de alerta, a ameaça silenciosa que se aproxima.
-4. Cena 4 - O Clímax (The Climax): A catástrofe ou momento decisivo em sua magnitude devastadora.
-5. Cena 5 - O Desfecho e Legado (The Legacy): O silêncio após o impacto, o que sobrou e a lição para o presente.
+ESTRUTURA DO ARCO NARRATIVO (6 CENAS OBRIGATÓRIAS):
+1. Cena 1 - O Gancho (The Hook): Abertura impactante que prende a atenção citando a data ou enigma histórico (25-35 palavras).
+2. Cena 2 - O Cenário (The Setting): A vida cotidiana, a arquitetura e a prosperidade antes da catástrofe (25-35 palavras).
+3. Cena 3 - Os Primeiros Sinais (The Escalation): Os tremores, o comportamento dos animais e o aviso da natureza (25-35 palavras).
+4. Cena 4 - O Clímax Devastador (The Climax): A explosão, a coluna piroclástica de 30 km e o fogo no céu (25-35 palavras).
+5. Cena 5 - A Sepultura de Cinzas (The Aftermath): A tempestade vulcânica congelando a cidade em segundos (25-35 palavras).
+6. Cena 6 - O Legado Eterno (The Legacy): As escavações modernas e a lição atemporal para a humanidade (25-35 palavras).
 
-REGRAS OBRIGATÓRIAS DE COERÊNCIA CONTEXTUAL E VISUAL:
-1. SE O TEMA FOR HISTÓRICO ANTIGO, NATURAL OU ARQUEOLÓGICO (ex: Pompeia, Vulcão Vesúvio, Roma Antiga, Grécia, Dinossauros):
-   - NUNCA use "remotion_graphic" com templates de "NewspaperHighlight" (jornais modernos impressos com manchetes sensacionalistas NÃO existiam na antiguidade!).
-   - NUNCA use "DataChartCard" com cifrões ou trilhões de dólares.
-   - USE "historic_media" (afrescos, pinturas clássicas, ruínas arqueológicas, mapas antigos de época).
-   - USE "parallax_25d" (estátuas romanas, bustos, o próprio vulcão ou ruínas com efeito de profundidade 3D).
-   - USE "stock_broll" (paisagens vulcânicas, cinzas, mar, escavações).
-   - Em "search_query", forneça termos em inglês claros e descritivos para o acervo histórico (ex: "Mount Vesuvius ancient eruption painting", "Pompeii archaeological ruins aerial").
+DIRETRIZES VISUAIS OBRIGATÓRIAS:
+- Cada cena DEVE ter um "search_query" COMPLETAMENTE DIFERENTE e específico em inglês!
+- Para temas históricos/antigos, priorize pinturas a óleo clássicas, ruínas do fórum, afrescos romanos e paisagens arqueológicas:
+  Exemplos:
+  * "Pompeii Forum Mount Vesuvius painting landscape"
+  * "Ancient Roman frescos in Pompeii art"
+  * "Eruption of Vesuvius classical painting"
+  * "Karl Briullov The Last Day of Pompeii painting"
+  * "Pompeii archaeological excavation ruins landscape"
+  * "House of the Vettii Pompeii fresco wall painting"
+- NUNCA repita o mesmo search_query em duas cenas!
 
-2. SE O TEMA FOR MODERNO (século XX e XXI, política, escândalos, crimes contemporâneos):
-   - Pode usar "NewspaperHighlight" para manchetes históricas de jornais da época.
-   - Pode usar "DataChartCard" para dados numéricos com unidade condizente.
-
-3. SCHEMA OBRIGATÓRIO (JSON PURO):
+SCHEMA OBRIGATÓRIO (JSON PURO):
 {
   "title": "Título Imersivo do Documentário",
   "scenes": [
     {
       "scene_id": 1,
-      "narration_text": "Texto fluído, cinematográfico, natural e dramático em português (15 a 30 palavras).",
+      "narration_text": "Texto fluído, cinematográfico, natural e dramático em português (25 a 40 palavras).",
       "start_time": 0.0,
-      "end_time": 7.0,
+      "end_time": 10.0,
       "visual_type": "historic_media",
       "visual_config": {
-        "search_query": "Pompeii ancient ruins sunset",
+        "search_query": "Pompeii Forum Mount Vesuvius painting landscape",
         "camera_motion": "push_in",
         "template": null,
         "props": {}
@@ -203,12 +203,12 @@ class ScriptDirector:
             scenes = [
                 SceneItem(
                     scene_id=1,
-                    narration_text=f"Sob o sol da Campânia romana, {clean_topic} guardava uma força titânica prestes a transformar para sempre o destino do Império.",
+                    narration_text=f"No verão do ano 79 da nossa era, a próspera cidade romana de Pompeia vivia o auge de sua riqueza. Mas nas sombras do horizonte, o Monte Vesúvio preparava o cataclismo mais devastador da história antiga.",
                     start_time=0.0,
-                    end_time=8.0,
+                    end_time=10.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} ancient roman empire painting",
+                        search_query="Pompeii Forum Mount Vesuvius painting landscape",
                         camera_motion="push_in"
                     ),
                     sfx=[
@@ -218,12 +218,12 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=2,
-                    narration_text=f"As cidades costeiras viviam seu apogeu econômico e cultural, completamente alheias aos tremores sutis que a montanha emitia.",
-                    start_time=8.0,
-                    end_time=16.0,
+                    narration_text=f"Mais de vinte mil cidadãos caminhavam por fóruns monumentais de mármore, termas luxuosas e vilas decoradas com afrescos deslumbrantes, completamente alheios à bomba geológica que a montanha sagrada escondia.",
+                    start_time=10.0,
+                    end_time=20.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} ancient ruins pillars",
+                        search_query="Ancient Roman frescos in Pompeii art",
                         camera_motion="drift_left"
                     ),
                     sfx=[
@@ -232,12 +232,12 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=3,
-                    narration_text=f"No auge da tragédia, o vulcão explodiu em uma coluna colossal de fogo e cinzas, bloqueando a luz do sol em pleno meio-dia.",
-                    start_time=16.0,
-                    end_time=24.0,
+                    narration_text=f"Nas primeiras horas daquele dia fatídico, a terra tremeu violentamente. Uma coluna colossal de pedra-pomes, cinzas e gases incandescentes foi ejetada a mais de trinta quilômetros de altura em direção à estratosfera.",
+                    start_time=20.0,
+                    end_time=30.0,
                     visual_type=VisualTypeEnum.PARALLAX_25D,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} volcano eruption",
+                        search_query="Eruption of Vesuvius classical painting",
                         camera_motion="push_in"
                     ),
                     sfx=[
@@ -246,30 +246,44 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=4,
-                    narration_text=f"Fluxos piroclásticos a centenas de graus varreram as ruas romanas, congelando vidas e edifícios em uma fração de segundo.",
-                    start_time=24.0,
-                    end_time=32.0,
+                    narration_text=f"O meio-dia transformou-se em trevas absolutas. Nuvens piroclásticas a centenas de quilômetros por hora e mais de trezentos graus varreram as ruas romanas, selando o destino da cidade em poucos segundos.",
+                    start_time=30.0,
+                    end_time=40.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} archaeological excavation ruins",
+                        search_query="Karl Briullov The Last Day of Pompeii painting",
                         camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="sub_bass_hit.wav", offset_sec=0.0)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=5,
+                    narration_text=f"Sob uma camada de mais de seis metros de cinzas vulcânicas compactas, Pompeia desapareceu completamente dos mapas, permanecendo intocada e esquecida pelo mundo por quase mil e setecentos anos.",
+                    start_time=40.0,
+                    end_time=50.0,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
+                    visual_config=SceneVisualConfig(
+                        search_query="Pompeii archaeological excavation ruins landscape",
+                        camera_motion="drift_left"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
                     ]
                 ),
                 SceneItem(
-                    scene_id=5,
-                    narration_text=f"Dois milênios depois, o que foi uma catástrofe inimaginável se tornou o maior retrato intacto da humanidade antiga já descoberto.",
-                    start_time=32.0,
-                    end_time=40.0,
+                    scene_id=6,
+                    narration_text=f"Hoje, as escavações arqueológicas revelam os detalhes mais íntimos desse império perdido, servindo como uma das mais fascinantes e comoventes cápsulas do tempo de toda a humanidade.",
+                    start_time=50.0,
+                    end_time=60.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} pompeii frescoes ancient art",
-                        camera_motion="drift_left"
+                        search_query="House of the Vettii Pompeii fresco wall painting",
+                        camera_motion="push_in"
                     ),
                     sfx=[
-                        SFXEvent(name="sub_bass_hit.wav", offset_sec=0.0)
+                        SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
                     ]
                 )
             ]

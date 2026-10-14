@@ -36,7 +36,7 @@ class GenerationRequest(BaseModel):
     topic: str
     project_id: Optional[str] = None
     tone: Optional[str] = "investigative"
-    voice: Optional[str] = "pt-BR-AntonioNeural"
+    voice: Optional[str] = "pt-BR-ThalitaMultilingualNeural"
     remove_silence: bool = True
     local_assets_folder: Optional[str] = None
     export_kdenlive: bool = True
