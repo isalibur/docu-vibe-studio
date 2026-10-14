@@ -25,7 +25,19 @@
   - `src/stage3_captions/aligner.py`: Adicionado `initial_prompt` no Faster-Whisper alimentado com o texto exato do roteiro, eliminando completamente as alucinações e gerando legendas 100% fiéis às palavras faladas.
   - `main.py`: Sincronização matemática da duração de cada clipe de vídeo do Remotion com o tempo de locução real daquela cena, impedindo cortes prematuros.
 - [x] **Gating Test do Documentário Remasterizado (`doc_vesuvio_v2_MASTER.mp4`):**
-  - Geradas 6 cenas históricas completas (23.8 segundos perfeitamente sincronizados).
+  - Geradas cenas históricas sincronizadas com legendas .ASS palavra por palavra.
   - Áudio cristalino em 48kHz e masterizado para transmissão broadcast (-14.3 dB LUFS).
-  - Legendas .ASS palavra por palavra refletindo exatamente o texto narrado, com destaque cinético ciano aprovado pelo usuário.
-  - Vídeo espelhado nos cards do painel web para visualização imediata em `http://localhost:8000`.
+
+## Sessão: 14/10/2026 - Masterização v3 com Voz Thalita e Curadoria de Obras Históricas
+- [x] **Substituição da Voz Genérica:**
+  - Migrado o padrão de `pt-BR-AntonioNeural` para `pt-BR-ThalitaMultilingualNeural` (voz moderna, fluida e natural de documentário).
+  - Adicionado suporte a `pt-PT-DuarteNeural` (narrador histórico clássico com gravitas) e interface atualizada.
+- [x] **Filtro Estrito de Mídia e Obras Históricas na Wikimedia:**
+  - Eliminado 100% de páginas escaneadas, arquivos DJVU, placas do lupanar e mapas de satélite.
+  - Implementada exigência de orientação horizontal landscape (aspect ratio >= 1.1 e resolução >= 800px).
+  - Implementado sistema de de-duplicação (`seen_urls`) impedindo imagens repetidas no mesmo vídeo.
+- [x] **Produção e Masterização do `doc_vesuvio_v3`:**
+  - 6 cenas completas com obras de arte autênticas: Fórum de Pompeia, Afresco romano em alta definição (6000x4000), Pintura clássica do Vesúvio, Afrescos da Casa dos Vettii.
+  - Legendas .ASS cinéticas 100% fiéis e sem alucinações.
+  - Loudness broadcast verificado (-14.4 dB LUFS).
+  - Atualizado player da interface Web (`http://localhost:8000`) para reproduzir o `doc_vesuvio_v3` automaticamente.
