@@ -15,6 +15,7 @@
 - [x] Criação do arquivo de identidade visual **`DESIGN.md`** (inspirado em *awesome-design-md*) padronizando o estilo *Vox / Documentário Investigativo*.
 - [x] Instalação do utilitário **RTK v0.50.0** (`rtk-ai.rtk`) globalmente no Windows via `winget`.
 - [x] Criação dos artefatos persistentes de governança: `task_plan.md`, `findings.md` e `progress.md`.
+- [x] Repositório oficial Git configurado e sincronizado no GitHub: [isalibur/docu-vibe-studio](https://github.com/isalibur/docu-vibe-studio).
 
 ---
 
