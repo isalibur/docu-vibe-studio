@@ -7,6 +7,7 @@ Suporta retomada inteligente por manifesto e execução de estágios individuais
 import argparse
 import sys
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Optional
 import logging
@@ -60,23 +61,44 @@ def run_pipeline(
         logger.info("Roteiro salvo com %d cenas no manifesto.", len(manifest.scenes))
 
     # ---------------------------------------------------------
-    # ESTÁGIO 2: Narração e Ritmo
+    # ESTÁGIO 2: Narração e Ritmo Cinematográfico
     # ---------------------------------------------------------
     if not stage or stage in ["2", "audio"]:
-        logger.info("=== ESTÁGIO 2: SÍNTESE DE VOZ E CORTE DE SILÊNCIO ===")
-        tts = TTSEngine(voice=voice or "pt-BR-AntonioNeural")
+        logger.info("=== ESTÁGIO 2: SÍNTESE DE VOZ E RITMO CINEMATOGRÁFICO ===")
+        tts = TTSEngine(voice=voice or "pt-BR-AntonioNeural", rate="+6%")
         audio_dir = workspace_dir / "audio"
         audio_dir.mkdir(parents=True, exist_ok=True)
+        cutter = SilenceCutter(target_sample_rate=48000)
 
-        # Concatena a narração de todas as cenas para o áudio mestre
-        full_narration = " ".join([s.narration_text for s in manifest.scenes])
-        raw_master = audio_dir / "narration_raw.mp3"
+        # 1. Sintetiza áudio de cada cena individualmente para sincronia temporal exata
+        scene_wav_paths = []
+        current_time = 0.0
+
+        for scene in manifest.scenes:
+            sc_raw = audio_dir / f"scene_{scene.scene_id:02d}_raw.mp3"
+            sc_wav = audio_dir / f"scene_{scene.scene_id:02d}.wav"
+            tts.generate_speech(scene.narration_text, sc_raw)
+            cutter.process_audio(sc_raw, sc_wav)
+            dur = tts.get_duration(sc_wav)
+            
+            # Margem suave de 0.3s para respiração cinematográfica da cena
+            scene_duration = round(dur + 0.3, 2)
+            scene.start_time = round(current_time, 2)
+            scene.end_time = round(current_time + scene_duration, 2)
+            current_time = scene.end_time
+            scene_wav_paths.append(sc_wav)
+
+        # 2. Concatena os áudios das cenas no áudio mestre contínuo a 48kHz
         trimmed_master = audio_dir / "narration_trimmed.wav"
-
-        tts.generate_speech(full_narration, raw_master)
-
-        cutter = SilenceCutter()
-        cutter.process_audio(raw_master, trimmed_master)
+        concat_inputs = []
+        filter_inputs = []
+        for i, sw in enumerate(scene_wav_paths):
+            concat_inputs.extend(["-i", str(sw.resolve())])
+            filter_inputs.append(f"[{i}:a]")
+        
+        filter_str = f"{''.join(filter_inputs)}concat=n={len(scene_wav_paths)}:v=0:a=1[aout]"
+        cmd = ["ffmpeg", "-y"] + concat_inputs + ["-filter_complex", filter_str, "-map", "[aout]", "-c:a", "pcm_s16le", str(trimmed_master)]
+        subprocess.run(cmd, check=True)
 
         manifest.audio_master = str(trimmed_master)
         manifest.stage_status.stage2_audio = StageStatusEnum.COMPLETED
@@ -84,12 +106,13 @@ def run_pipeline(
         flush_vram()
 
     # ---------------------------------------------------------
-    # ESTÁGIO 3: Legendas Dinâmicas
+    # ESTÁGIO 3: Legendas Dinâmicas com Guia Fonético
     # ---------------------------------------------------------
     if not stage or stage in ["3", "captions"]:
         logger.info("=== ESTÁGIO 3: SINCRONIA FONÉTICA E LEGENDAS .ASS ===")
         aligner = AudioAligner(model_size="base", device="cpu", compute_type="int8")
-        words = aligner.align_audio(Path(manifest.audio_master))
+        full_narration = " ".join([s.narration_text for s in manifest.scenes])
+        words = aligner.align_audio(Path(manifest.audio_master), language="pt", reference_text=full_narration)
 
         captions_path = workspace_dir / "captions" / "dynamic_words.ass"
         gen = ASSGenerator(words_per_block=4)
@@ -119,7 +142,7 @@ def run_pipeline(
 
         for scene in manifest.scenes:
             out_clip = renders_dir / f"scene_{scene.scene_id:02d}.mp4"
-            duration_frames = int(max(4.0, scene.duration_sec or 5.0) * manifest.fps)
+            duration_frames = int(max(4.0, (scene.end_time - scene.start_time)) * manifest.fps)
             query = scene.visual_config.search_query or topic
 
             if scene.visual_type == VisualTypeEnum.REMOTION_GRAPHIC:

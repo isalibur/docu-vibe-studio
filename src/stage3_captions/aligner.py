@@ -33,9 +33,10 @@ class AudioAligner:
         self.device = device
         self.compute_type = compute_type if device == "cuda" else "int8"
 
-    def align_audio(self, audio_path: Path, language: str = "pt") -> List[WordTimestamp]:
+    def align_audio(self, audio_path: Path, language: str = "pt", reference_text: Optional[str] = None) -> List[WordTimestamp]:
         """
         Transcreve o áudio extraindo os timestamps exatos de cada palavra individual.
+        Utiliza reference_text como prompt inicial para guiar o vocabulário e impedir alucinações.
         Descarrega o modelo da memória imediatamente após o término para evitar OOM.
         """
         if not audio_path.exists():
@@ -57,12 +58,18 @@ class AudioAligner:
 
         words: List[WordTimestamp] = []
         try:
+            transcribe_kwargs = {
+                "language": language,
+                "word_timestamps": True,
+                "beam_size": 5,
+                "vad_filter": False
+            }
+            if reference_text:
+                transcribe_kwargs["initial_prompt"] = reference_text[:1000]
+
             segments, _ = model.transcribe(
                 str(audio_path),
-                language=language,
-                word_timestamps=True,
-                beam_size=5,
-                vad_filter=False
+                **transcribe_kwargs
             )
 
             for segment in segments:

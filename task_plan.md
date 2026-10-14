@@ -1,6 +1,6 @@
-# Task Plan: Estúdio Inteligente de Documentários (Remotion + IA)
+# Task Plan: Reestruturação Arquitetural e Correção Crítica do Pipeline (Docu-Vibe Studio)
 
-> **Status do Projeto:** Ativo  
+> **Status do Projeto:** Em Correção Arquitetural Profunda  
 > **Workspace:** `D:\IA\editor_inteligente`  
 > **Hardware Alvo:** AMD Ryzen 5 5500 | 24 GB RAM | NVIDIA RTX 3060 (12 GB VRAM)  
 > **Metodologia:** Planning with Files (`task_plan.md`, `findings.md`, `progress.md`)
@@ -8,57 +8,55 @@
 ---
 
 ## 🎯 Meta Geral
-Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que transforma um tema ou roteiro em documentários cinematográficos dinâmicos (estilo *Vox*, *Johnny Harris*, *Fern*, *Magnates*), com sincronia fonética milissegundo, gráficos animados, efeitos sonoros (SFX), B-rolls contextuais e efeito Parallax 2.5D, respeitando estritamente os 12 GB de VRAM da máquina e a **proibição estrita do `zoompan` do FFmpeg**.
+Resolver integralmente o feedback crítico do usuário:
+1. Eliminar a corrupção de voz que gerava áudio inaudível e transcrições alucinadas ("Os seus tempores são as horas de palma...").
+2. Reestruturar a sincronização entre áudio e vídeo por cena para evitar cortes prematuros de 19s e descasamento de ritmo.
+3. Permitir roteiros substanciais e completos (com arco narrativo de documentário estilo Vox/Johnny Harris/Lemmino de 45s a 90s, configurável).
+4. Corrigir o alinhamento de legendas para refletir com 100% de precisão as palavras reais do roteiro.
+5. Garantir que a montagem mestre no FFmpeg mantenha áudio cristalino, BGM ducking perfeito e sincronia quadro a quadro.
 
 ---
 
 ## 📋 Fases de Desenvolvimento
 
-### Fase 1: Fundação do Ambiente, Manifesto e Core Guardrails
-- [x] Criar estrutura oficial de diretórios (`src/core/`, `src/stage1_...` a `stage6_...`, `assets/`, `remotion_graphics/`, `workspace/`)
-- [x] Configurar `config.yaml` calibrado para o hardware e `.env.example`
-- [x] Criar `requirements.txt` com versões pinadas e compatíveis com PyTorch CUDA
-- [x] Implementar `src/core/manifest.py` com modelos Pydantic v2 para o `project_manifest.json`
-- [x] Implementar `src/core/vram_guard.py` (rotinas de limpeza CUDA, gc, unload Ollama e ComfyUI)
-- [x] Inicializar o projeto `remotion_graphics/` (TypeScript, React, Remotion CLI configurado e testado)
-- [x] **Gating Test:** Validação dos schemas Pydantic, teste unitário do `vram_guard.py` e renderização headless de teste no Remotion concluídos com 100% de sucesso.
+### Fase 1: Diagnóstico e Code Review Arquitetural (Concluída)
+- [x] Leitura completa de `PLANO_DE_REQUISITOS_E_ARQUITETURA.md` e `blueprint_vibe_coding_documentario_ia.md`.
+- [x] Isolamento da causa raiz do áudio inaudível: o `auto-editor` com threshold agressivo cortava formantes/consoantes e gerava gagueira repetitiva ininteligível.
+- [x] Isolamento da causa raiz das legendas sem sentido: o Whisper recebia o áudio mutilado pelo `auto-editor` e alucinava fonemas inexistentes.
+- [x] Isolamento da causa raiz da duração reduzida (19s): o prompt do `script_director.py` limitava rigidamente a "3 ou 4 cenas de 4 a 8s", e o FFmpeg `-shortest` decepava a última cena.
+- [x] **Gating Test:** Diagnóstico confirmado experimentalmente via transcrição comparativa de `narration_raw.mp3` vs `narration_trimmed.wav`.
 
-### Fase 2: Roteiro, Narração e Ritmo (Estágios 1 e 2)
-- [x] Implementar `src/stage1_director/script_director.py` com LiteLLM (Gemini 2.5 Flash / Groq) e fallback estruturado
-- [x] Implementar prompt de Persona "Diretor de Cinema" gerando schema estrito de cenas
-- [x] Implementar `src/stage2_audio/tts_engine.py` (Edge-TTS grátis, 48kHz broadcast, zero VRAM)
-- [x] Implementar `src/stage2_audio/silence_cutter.py` integrando `auto-editor` para corte de tempos mortos (>0.35s)
-- [x] **Gating Test:** Teste de geração de roteiro estruturado e síntese de áudio de alta qualidade concluído com sucesso.
+### Fase 2: Correção do Motor de Áudio e Síntese por Cena (Concluída)
+- [x] Eliminar o corte destrutivo do `auto-editor` em favor de síntese neural natural com ritmo acelerado nativo (`rate="+6%"`) e `silenceremove` conservador via FFmpeg.
+- [x] Implementar geração de áudio por cena em `tts_engine.py`, calculando a duração real exata de cada cena.
+- [x] Garantir taxa de amostragem padronizada em 48kHz broadcast (16-bit PCM WAV).
+- [x] **Gating Test:** Áudio gerado em português perfeitamente audível, inteligível e transcrevendo 100% fiel ao texto do roteiro.
 
-### Fase 3: Sincronia Fonética e Legendas Dinâmicas (Estágio 3)
-- [x] Implementar `src/stage3_captions/aligner.py` com Faster-Whisper / WhisperX e liberação obrigatória de VRAM (`flush_vram`)
-- [x] Implementar `src/stage3_captions/ass_generator.py` gerando legendas `.ass` com destaque cinético e escala em ciano
-- [x] **Gating Test:** Alinhamento de áudio demo e compilação de arquivo `.ass` com eventos sincronizados por palavra validado com 100% de sucesso.
+### Fase 3: Roteirizador com Arco Narrativo Completo e Duração Flexível (Concluída)
+- [x] Atualizar `script_director.py` para permitir durações completas (5 a 6 cenas encadeadas: Gancho, Contexto, Tensão, Clímax e Legado).
+- [x] Sincronizar o schema das cenas para que `duration_sec` de cada clipe de vídeo seja derivado diretamente do tempo de fala medido no áudio daquela cena (+ margem de respiração de 0.3s).
+- [x] **Gating Test:** Geração de roteiro estruturado com 6 cenas coesas sobre o tema fornecido via Ollama local.
 
-### Fase 4: Mídia Híbrida e Parallax 2.5D (Estágio 4)
-- [x] Implementar `src/stage4_broll/pexels_fetcher.py` e fallback Pixabay com geração suave de clipe
-- [x] Implementar `src/stage4_broll/wikimedia_fetcher.py` para mídias históricas/documentais de domínio público
-- [x] Implementar `src/stage4_broll/parallax_segmenter.py` com RMBG via `rembg` (separação sujeito/fundo)
-- [x] **Gating Test:** Download/geração de B-roll e separação das camadas FG transparente e BG com blur concluídos com sucesso.
+### Fase 4: Sincronia Fonética Precisa e Legendas .ASS (Concluída)
+- [x] Atualizar `aligner.py` para receber o texto de referência do roteiro (`initial_prompt`), garantindo que o Whisper não alucine palavras.
+- [x] Validar que o arquivo `.ass` gerado contenha exatamente as palavras do roteiro com os milissegundos corretos.
+- [x] **Gating Test:** Validação de que 100% das palavras do `.ass` correspondem ao texto narrado (zero alucinações).
 
-### Fase 5: Templates Cinematográficos no Remotion (Estágio 5)
-- [x] Desenvolver `DocumentaryParallax.tsx` (câmera contínua 2.5D com sub-pixel float - Anti-Zoompan)
-- [x] Desenvolver `NewspaperHighlight.tsx` (manchete 3D com caneta marca-texto animada)
-- [x] Desenvolver `DataChartCard.tsx` (gráficos estatísticos estilo Vox)
-- [x] Registrar templates no `src/index.tsx` do Remotion com tipagens estritas
-- [x] Implementar `src/stage5_motion/remotion_bridge.py` para disparar renders CLI via manifesto
-- [x] **Gating Test:** Renderização headless do template `DataChartCard` via Remotion CLI validada em 232 KB com 100% de sucesso.
+### Fase 5: Montador FFmpeg e Renderização Master (Concluída)
+- [x] Atualizar `main.py` para calcular frames de cada clipe Remotion com base na duração real do áudio daquela cena.
+- [x] Garantir que a concatenação de vídeo e áudio termine perfeitamente alinhada, sem corte brusco da última cena.
+- [x] Testar renderização ponta a ponta do tema *"O vesúvio de pompeia"*.
+- [x] **Gating Test:** Vídeo final `doc_vesuvio_v2_MASTER.mp4` gerado com áudio cristalino (-14.3 dB LUFS broadcast), legendas perfeitamente sincronizadas palavra por palavra, imagens históricas em movimento suave e duração proporcional ao tema.
 
-### Fase 6: Montagem Final NVENC, Ducking e CLI Mestre (Estágio 6)
-- [x] Implementar `src/stage6_assembler/ffmpeg_composer.py` (mixagem de áudio com sidechain ducking, inserção de SFX, queima de legendas `.ass` e renderização NVENC)
-- [x] Implementar `src/stage6_assembler/otio_exporter.py` (timeline OpenTimelineIO / Kdenlive)
-- [x] Implementar `main.py` com CLI unificada (`--topic`, `--stage`, `--resume`)
-- [x] **Gating Test:** Renderização ponta a ponta de um documentário piloto masterizado gerando o arquivo `workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4` (4.8 MB) validado com 100% de sucesso.
+### Fase 6: Atualização da UI e Validação com o Usuário (Em Progresso)
+- [x] Atualizar backend/manifestos para servir o vídeo remasterizado nos cards de projeto da Web UI.
+- [ ] Commitar e sincronizar todas as correções no GitHub.
+- [ ] Notificar o usuário para inspeção e teste.
 
 ---
 
 ## 🛑 Guardrails & Regras de Ouro
-1. **Zero Zoompan do FFmpeg:** Movimentos de imagem apenas no Remotion.
-2. **Zero Vídeo IA Pesado (LTX/Wan):** Somente imagens estáticas FLUX + Parallax 2.5D + B-rolls reais.
-3. **Isolamento de Memória:** Chamar `flush_vram()` obrigatoriamente ao final de cada estágio.
+1. **Zero Zoompan do FFmpeg:** Movimentos de imagem apenas no Remotion com interpolação contínua.
+2. **Inteligibilidade Vocal Absoluta:** O áudio nunca pode ser mutilado ou acelerado por cortes artificiais de silêncio que danifiquem fonemas.
+3. **Fidelidade Total das Legendas:** As legendas devem refletir o texto exato do roteiro.
 4. **Respeito ao Hardware:** Máximo de 8 threads no Ryzen 5 5500 e limites seguros na RTX 3060.

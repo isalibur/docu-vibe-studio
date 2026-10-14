@@ -31,7 +31,15 @@ logger = logging.getLogger("ScriptDirector")
 
 DIRECTOR_SYSTEM_PROMPT = """Você é um Diretor de Cinema e Roteirista Chefe especializado em documentários cinematográficos de alta retenção (estilo Vox, Johnny Harris, Lemmino e BBC).
 
-Sua missão é transformar o TEMA fornecido em um ROTEIRO CINEMATOGRÁFICO com 3 ou 4 cenas dinâmicas (4 a 8 segundos cada).
+Sua missão é transformar o TEMA fornecido em um DOCUMENTÁRIO COMPLETO com 5 a 6 cenas encadeadas (aproximadamente 45 a 70 segundos no total).
+Cada cena deve conter de 15 a 30 palavras em português natural, dramático e fluído.
+
+ESTRUTURA DO ARCO NARRATIVO:
+1. Cena 1 - O Gancho (The Hook): Abertura impactante que prende a atenção nos primeiros 3 segundos.
+2. Cena 2 - O Contexto (The Setting): Apresentação do ambiente, da época e do cenário antes do clímax.
+3. Cena 3 - A Tensão Crescente (The Escalation): Os primeiros sinais de alerta, a ameaça silenciosa que se aproxima.
+4. Cena 4 - O Clímax (The Climax): A catástrofe ou momento decisivo em sua magnitude devastadora.
+5. Cena 5 - O Desfecho e Legado (The Legacy): O silêncio após o impacto, o que sobrou e a lição para o presente.
 
 REGRAS OBRIGATÓRIAS DE COERÊNCIA CONTEXTUAL E VISUAL:
 1. SE O TEMA FOR HISTÓRICO ANTIGO, NATURAL OU ARQUEOLÓGICO (ex: Pompeia, Vulcão Vesúvio, Roma Antiga, Grécia, Dinossauros):
@@ -52,9 +60,9 @@ REGRAS OBRIGATÓRIAS DE COERÊNCIA CONTEXTUAL E VISUAL:
   "scenes": [
     {
       "scene_id": 1,
-      "narration_text": "Texto fluído, cinematográfico, natural e dramático em português.",
+      "narration_text": "Texto fluído, cinematográfico, natural e dramático em português (15 a 30 palavras).",
       "start_time": 0.0,
-      "end_time": 6.5,
+      "end_time": 7.0,
       "visual_type": "historic_media",
       "visual_config": {
         "search_query": "Pompeii ancient ruins sunset",
@@ -195,12 +203,12 @@ class ScriptDirector:
             scenes = [
                 SceneItem(
                     scene_id=1,
-                    narration_text=f"Sob o céu da Campânia romana, {clean_topic} guardava uma força oculta prestes a transformar para sempre o curso da história.",
+                    narration_text=f"Sob o sol da Campânia romana, {clean_topic} guardava uma força titânica prestes a transformar para sempre o destino do Império.",
                     start_time=0.0,
-                    end_time=6.5,
+                    end_time=8.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} ancient ruins painting",
+                        search_query=f"{clean_query} ancient roman empire painting",
                         camera_motion="push_in"
                     ),
                     sfx=[
@@ -210,13 +218,13 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=2,
-                    narration_text=f"Em questão de horas, a força avassaladora da natureza soterrou cidades inteiras, congelando vidas e monumentos no tempo.",
-                    start_time=6.5,
-                    end_time=13.0,
-                    visual_type=VisualTypeEnum.PARALLAX_25D,
+                    narration_text=f"As cidades costeiras viviam seu apogeu econômico e cultural, completamente alheias aos tremores sutis que a montanha emitia.",
+                    start_time=8.0,
+                    end_time=16.0,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
-                        search_query=f"{clean_query} volcano eruption",
-                        camera_motion="push_in"
+                        search_query=f"{clean_query} ancient ruins pillars",
+                        camera_motion="drift_left"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
@@ -224,16 +232,44 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=3,
-                    narration_text=f"Hoje, os vestígios arqueológicos preservados sob metros de cinzas revelam ao mundo moderno os segredos intactos dessa tragédia.",
-                    start_time=13.0,
-                    end_time=19.5,
+                    narration_text=f"No auge da tragédia, o vulcão explodiu em uma coluna colossal de fogo e cinzas, bloqueando a luz do sol em pleno meio-dia.",
+                    start_time=16.0,
+                    end_time=24.0,
+                    visual_type=VisualTypeEnum.PARALLAX_25D,
+                    visual_config=SceneVisualConfig(
+                        search_query=f"{clean_query} volcano eruption",
+                        camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="volcano_roar.wav", offset_sec=0.5)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=4,
+                    narration_text=f"Fluxos piroclásticos a centenas de graus varreram as ruas romanas, congelando vidas e edifícios em uma fração de segundo.",
+                    start_time=24.0,
+                    end_time=32.0,
                     visual_type=VisualTypeEnum.HISTORIC_MEDIA,
                     visual_config=SceneVisualConfig(
                         search_query=f"{clean_query} archaeological excavation ruins",
-                        camera_motion="drift_left"
+                        camera_motion="push_in"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=5,
+                    narration_text=f"Dois milênios depois, o que foi uma catástrofe inimaginável se tornou o maior retrato intacto da humanidade antiga já descoberto.",
+                    start_time=32.0,
+                    end_time=40.0,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
+                    visual_config=SceneVisualConfig(
+                        search_query=f"{clean_query} pompeii frescoes ancient art",
+                        camera_motion="drift_left"
+                    ),
+                    sfx=[
+                        SFXEvent(name="sub_bass_hit.wav", offset_sec=0.0)
                     ]
                 )
             ]
@@ -244,7 +280,7 @@ class ScriptDirector:
                     scene_id=1,
                     narration_text=f"Por trás dos registros oficiais sobre {clean_topic}, escondem-se detalhes cruciais que desafiam a versão convencional dos fatos.",
                     start_time=0.0,
-                    end_time=6.5,
+                    end_time=8.0,
                     visual_type=VisualTypeEnum.REMOTION_GRAPHIC,
                     visual_config=SceneVisualConfig(
                         template="NewspaperHighlight",
@@ -263,13 +299,37 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=2,
-                    narration_text=f"Para compreender a real dimensão dos acontecimentos em torno de {clean_topic}, os dados apontam para uma progressão dramática.",
-                    start_time=6.5,
-                    end_time=13.0,
+                    narration_text=f"Documentos antes confidenciais revelam que os primeiros sinais de alerta foram sistematicamente ignorados pelas lideranças.",
+                    start_time=8.0,
+                    end_time=16.0,
                     visual_type=VisualTypeEnum.PARALLAX_25D,
                     visual_config=SceneVisualConfig(
                         search_query=clean_query,
                         camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=3,
+                    narration_text=f"Quando a crise atingiu o ápice, a escala do impacto surpreendeu até os analistas mais experientes do setor.",
+                    start_time=16.0,
+                    end_time=24.0,
+                    visual_type=VisualTypeEnum.REMOTION_GRAPHIC,
+                    visual_config=SceneVisualConfig(
+                        template="DataChartCard",
+                        props={
+                            "headline": f"Escala do Impacto: {clean_topic}",
+                            "source_label": "Dados Oficiais Consolidados",
+                            "unit_label": "Pontos",
+                            "data_points": [
+                                {"year": "Fase 1", "value": 2.5},
+                                {"year": "Fase 2", "value": 7.8},
+                                {"year": "Pico", "value": 14.2}
+                            ],
+                            "theme": "vox_dark_grid"
+                        }
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0),
@@ -277,10 +337,10 @@ class ScriptDirector:
                     ]
                 ),
                 SceneItem(
-                    scene_id=3,
-                    narration_text=f"Até os dias de hoje, as consequências e os desdobramentos sobre {clean_topic} continuam a repercutir no cenário global.",
-                    start_time=13.0,
-                    end_time=19.0,
+                    scene_id=4,
+                    narration_text=f"As consequências imediatas geraram uma onda de choque que redefiniu completamente os padrões de segurança e regulação.",
+                    start_time=24.0,
+                    end_time=32.0,
                     visual_type=VisualTypeEnum.STOCK_BROLL,
                     visual_config=SceneVisualConfig(
                         search_query=clean_query,
@@ -288,6 +348,20 @@ class ScriptDirector:
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=5,
+                    narration_text=f"Hoje, o caso de {clean_topic} permanece como um dos episódios mais estudados e emblemáticos da história recente.",
+                    start_time=32.0,
+                    end_time=40.0,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
+                    visual_config=SceneVisualConfig(
+                        search_query=clean_query,
+                        camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="sub_bass_hit.wav", offset_sec=0.0)
                     ]
                 )
             ]

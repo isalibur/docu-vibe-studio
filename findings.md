@@ -8,22 +8,38 @@ Este documento registra todas as decisões arquiteturais, descobertas de pesquis
 * **Ambiente Python:** Python 3.10.5 no `.venv` local e 3.12 no sistema, com PyTorch 2.6.0+cu124 já disponível.
 * **Ambiente Node.js:** v24.19.0 (compatível com Remotion v4+ e WebMCP).
 * **FFmpeg:** Versão 8.1.1 full build instalada e validada com suporte a `h264_nvenc` e `hevc_nvenc`.
-* **Tokens & Terminal:** Ferramenta **RTK v0.50.0** instalada via `winget` para redução de overhead de tokens nos comandos de terminal.
-* **Planning Framework:** Metodologia e skill oficial **`planning-with-files`** instalada na pasta `.agents/skills/planning-with-files/`.
+* **Hardware:** AMD Ryzen 5 5500 (6 núcleos / 12 threads), 24 GB RAM, NVIDIA GeForce RTX 3060 (12 GB VRAM).
+* **LLM Local:** Ollama v0.40.3 com `qwen2.5:3b` operando 100% offload na GPU (37/37 camadas na VRAM, consumo <2 GB).
 
 ---
 
-## 2. Decisões Arquiteturais Fundamentais
-* **Proibição do `zoompan` do FFmpeg:** Confirmado tecnicamente que o `zoompan` opera com arredondamento inteiro de coordenadas, gerando jitter inaceitável. O Remotion utiliza CSS Transforms e WebGL acelerado com floats contínuos e curvas `cubic-bezier`.
-* **Eliminação de Geradores de Vídeo IA (Wan2GP / LTX-Video):** Testes e literatura confirmam que vídeos de modelos DiT levam de 2 a 5 minutos por clipe de 4s na RTX 3060 e consomem ~11 GB de VRAM com risco alto de OOM e artefatos de consistência. A substituição por imagens estáticas FLUX GGUF (~6s por imagem) + recorte RMBG + Parallax 2.5D no Remotion atinge estética superior e renderização ~40x mais rápida.
-* **WhisperX vs. Faster-Whisper puro:** WhisperX foi eleito porque aplica alinhamento fonético Wav2Vec2, essencial para posicionar o destaque palavra por palavra na legenda e na caneta marca-texto sobre manchetes.
-* **Contrato Pydantic v2:** Centralização de todas as propriedades de cena no `project_manifest.json` com campos estritos e validação de tempo, caminhos de áudio e tipo visual.
+## 2. Descobertas Críticas do Code Review (14/10/2026)
 
----
+### Descoberta 1: Por que a voz ficou inaudível e as legendas alucinadas?
+* **Causa Raiz Identificada:** No estágio 2, o áudio sintetizado pelo `edge-tts` (`narration_raw.mp3`) era absolutamente perfeito, nítido e em português correto. Porém, em seguida o script chamava:
+  ```bash
+  auto-editor narration_raw.mp3 --edit audio:threshold=4% --margin 0.28sec -o narration_trimmed.wav
+  ```
+* O `auto-editor` com threshold fixo de volume em 4% interpretou consoantes suaves, transições de sílabas e fonemas sibilantes/fricativos como "silêncio", decepando partes de cada palavra e costurando os pedaços restantes.
+* **Resultado:** O áudio virou um murmúrio truncado e repetitivo ("Jususususus...").
+* Quando o Faster-Whisper tentou transcrever esse áudio picotado, gerou alucinações absurdas:
+  *"Os seus tempores são as horas de palma dos tempores, nos depoque eles se usam os seus likes..."*
+* Essas alucinações foram salvas no `.ass` e queimadas no vídeo.
+* **Solução Arquitetural:** 
+  1. Abandonar o corte destrutivo de silêncios do `auto-editor` para vozes neurais TTS (que já possuem ritmo natural e fluído).
+  2. Para documentários dinâmicos, utilizar aceleração nativa de prosódia do TTS (`rate="+8%"` ou `rate="+10%"`) no `edge-tts` e, se necessário, filtro conservador de silêncio longo do FFmpeg (`silenceremove`).
+  3. Alinhar a transcrição do Whisper usando o texto original do roteiro como guia (`initial_prompt`), impedindo qualquer alucinação.
 
-## 3. Diagnóstico e Resolução do Problema da Amostra Repetida (13/10/2026)
-* **Causa Raiz 1 (Fallback Estático no Roteirizador):** Quando nenhuma chave de API (`GEMINI_API_KEY`) estava presente no `.env`, `_generate_fallback_template` no `script_director.py` gerava um roteiro fixo sobre o colapso financeiro de 2008, ignorando o tema fornecido. Corrigido com gerador heurístico investigativo que extrai palavras-chave do tema fornecido e constrói dinamicamente Manchetes 3D, Gráficos de Impacto e chamadas históricas para o tema exato (ex: Monte Vesúvio de Pompeia).
-* **Causa Raiz 2 (Faster-Whisper Silero VAD no Áudio Tratado):** O parâmetro `vad_filter=True` em áudios já limpos pelo auto-editor descartava a fala gerada pelo TTS, retornando 0 palavras. Desabilitando `vad_filter` e utilizando o modelo `base`, o extrator capturou com perfeição 86 palavras com timestamps fonéticos milimétricos.
-* **Causa Raiz 3 (Filtro FFmpeg de Legendas Desconectado):** `ffmpeg_composer.py` preparava a string `vf_str` mas não a injetava no comando. O pipeline foi unificado com `[0:v]subtitles='...'[vout]` e `[2:a]sidechaincompress...[aout]` dentro do mesmo `-filter_complex`, queimando legendas dinâmicas ciano no render NVENC H.264.
-* **Causa Raiz 4 (Mídia Híbrida Desconectada em main.py):** O estágio 4 chamava apenas `broll_fetcher` (que gerava tela escura sem chave de API). O pipeline foi integrado de ponta a ponta com `WikimediaFetcher` (100% gratuito e público) + `ParallaxSegmenter` (`rembg`) + Remotion `DocumentaryParallax`, entregando imagens reais históricas com efeito 2.5D.
-* **Causa Raiz 5 (Cache do Player no Navegador e Opções de UI):** O player do frontend carregava URLs sem parâmetro de bust de cache (`?t=timestamp`), e o servidor não repassava as opções de voz e pasta local. Adicionado cache-busting, repasse de argumentos e campo para salvar chave do Gemini direto no frontend.
+### Descoberta 2: Por que o vídeo durou apenas 19 segundos?
+* **Causa Raiz Identificada:** 
+  1. O prompt do `script_director.py` continha a instrução explícita: *"com 3 ou 4 cenas dinâmicas (4 a 8 segundos cada)"*.
+  2. As 4 frases geradas duraram 19.03 segundos no áudio sintetizado.
+  3. No FFmpeg, a flag `-shortest` encerrou o vídeo assim que o áudio de 19.03s terminou, cortando o final da cena 4.
+* **Solução Arquitetural:**
+  1. Permitir durações configuráveis (ex: 5 a 8 cenas para um documentário padrão de 45 a 90 segundos com arco narrativo completo: Gancho, Contextualização, Aprofundamento, Clímax e Reflexão Final).
+  2. Sincronizar o vídeo com o áudio: calcular o número exato de frames de cada cena a partir da duração real da narração daquela cena específica (+ margem de respiração), garantindo que o vídeo e a fala terminem no mesmo frame exato.
+
+### Descoberta 3: Por que o Parallax e o Visual funcionaram bem?
+* O componente `DocumentaryParallax.tsx` com CSS transforms (`transform: scale(...) translateX(...)`) e interpolação de sub-pixel em 60/30fps garantiu fluidez cinematográfica sem nenhum jitter.
+* As mídias históricas do Wikimedia Commons foram carregadas em alta resolução (1080p).
+* O visual agradou ao usuário; o problema residia exclusivamente no tripé Áudio / Legenda / Duração.
