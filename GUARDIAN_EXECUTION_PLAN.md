@@ -133,7 +133,7 @@ O objetivo deste projeto não é criar um "slideshow automatizado com voz robót
 
 | Fase | Descrição | Status | Data Início | Data Conclusão | Evidências / Artefatos |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Fase 1** | Integração 9router (`localhost:20128`) | ⏳ Pendente | — | — | — |
+| **Fase 1** | Integração 9router (`localhost:20128`) | ✅ Concluída | 14/10/2026 20:49 | 14/10/2026 20:53 | Gating Test aprovado: 30s (3 cenas, 65 palavras) e 60s (6 cenas, 154 palavras). Conexão `arsenal` operacional. |
 | **Fase 2** | Motor de Voz Local / F5-TTS / Kokoro | ⏳ Pendente | — | — | — |
 | **Fase 3** | Legendas Sintáticas por Pontuação | ⏳ Pendente | — | — | — |
 | **Fase 4** | Visual Híbrido e Templates Remotion | ⏳ Pendente | — | — | — |

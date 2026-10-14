@@ -21,10 +21,10 @@ Transformar o pipeline de vídeo em uma **esteira de produção cinematográfica
 ## 📋 Fases Sequenciais de Execução (Quality Gate Checklist)
 
 ### Fase 1: Integração do 9router (`http://localhost:20128/v1`)
-- [ ] Atualizar `src/stage1_director/script_director.py` para chamar o endpoint `http://localhost:20128/v1/chat/completions` com a chave do 9router (`sk-4c637809...`) e modelo `arsenal`.
-- [ ] Implementar prompt rigoroso de *Shot List* contextual e schema JSON estrito.
-- [ ] **Gating Test 1:** Gerar roteiro para teste de 30s e validar consistência semântica e formato JSON.
-- [ ] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
+- [x] Atualizar `src/stage1_director/script_director.py` para chamar o endpoint `http://localhost:20128/v1/chat/completions` com a chave do 9router (`sk-4c637809...`) e modelo `arsenal`.
+- [x] Implementar prompt rigoroso de *Shot List* contextual e schema JSON estrito.
+- [x] **Gating Test 1:** Gerar roteiro para teste de 30s e 60s validando consistência semântica e formato JSON.
+- [x] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
 
 ### Fase 2: Motor de Narração Local (F5-TTS / Kokoro em `audio_factory`)
 - [ ] Criar ponte em `src/stage2_audio/local_voice_engine.py` aproveitando o venv de `D:\IA\audio_factory`.
