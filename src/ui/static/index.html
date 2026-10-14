@@ -133,6 +133,28 @@
         </div>
       </div>
 
+      <!-- Card: Chaves de API (Opcional) -->
+      <div class="bg-[#161920] border border-white/10 rounded-xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-purple-400 flex items-center gap-2">
+            <span>🔑</span> Chaves de API (LLM)
+          </h2>
+          <span id="llm-status-badge" class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Modo Offline Inteligente</span>
+        </div>
+        <p class="text-[11px] text-gray-400">
+          O estúdio gera roteiros investigativos dinâmicos mesmo offline. Para roteiros 100% livres via IA, insira sua chave do Google Gemini (gratuita):
+        </p>
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[11px] text-gray-300 mb-1">Google Gemini API Key (<a href="https://aistudio.google.com/" target="_blank" class="text-amber-400 underline">obter grátis</a>)</label>
+            <input type="password" id="input-gemini-key" placeholder="AIzaSy..." class="w-full bg-[#0D0F12] border border-white/10 rounded px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <button onclick="saveApiKeys()" class="w-full py-1.5 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 rounded text-xs transition">
+            💾 Salvar Chave no .env
+          </button>
+        </div>
+      </div>
+
     </section>
 
     <!-- COLUNA DA DIREITA: PLAYER E PROJETOS RECENTES (7 Cols) -->
@@ -194,6 +216,48 @@
 
   <script>
     let pollInterval = null;
+
+    async function checkApiKeys() {
+      try {
+        const res = await fetch('/api/settings/keys');
+        const data = await res.json();
+        const badge = document.getElementById('llm-status-badge');
+        if (data.has_gemini) {
+          badge.innerText = 'Gemini 2.5 Ativo ✨';
+          badge.className = 'text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono';
+        } else if (data.has_groq) {
+          badge.innerText = 'Groq LLaMA Ativo ✨';
+          badge.className = 'text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono';
+        } else {
+          badge.innerText = 'Modo Inteligente Offline (Ativo)';
+          badge.className = 'text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function saveApiKeys() {
+      const geminiKey = document.getElementById('input-gemini-key').value.trim();
+      if (!geminiKey) {
+        alert("Insira a chave do Gemini para salvar.");
+        return;
+      }
+      try {
+        const res = await fetch('/api/settings/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gemini_key: geminiKey })
+        });
+        if (res.ok) {
+          alert("Chave salva com sucesso!");
+          document.getElementById('input-gemini-key').value = '';
+          checkApiKeys();
+        }
+      } catch (e) {
+        alert("Erro ao salvar chave: " + e.message);
+      }
+    }
 
     async function startGeneration() {
       const topic = document.getElementById('input-topic').value.trim();
@@ -264,10 +328,15 @@
 
     function loadProjectVideo(videoUrl, title) {
       const video = document.getElementById('main-video');
-      video.src = videoUrl;
-      video.play();
+      const cleanUrl = videoUrl.split('?')[0];
+      const bustedUrl = cleanUrl + '?t=' + Date.now();
+      video.src = bustedUrl;
+      video.load();
+      video.play().catch(e => console.log('Autoplay:', e));
       document.getElementById('current-project-title').innerText = title;
-      document.getElementById('btn-download-video').href = videoUrl;
+      document.getElementById('btn-download-video').href = cleanUrl;
+      const otioUrl = cleanUrl.replace('_MASTER.mp4', '_timeline.otio');
+      document.getElementById('btn-download-otio').href = otioUrl;
     }
 
     async function refreshProjects() {
@@ -299,7 +368,9 @@
     }
 
     // Inicialização
+    checkApiKeys();
     refreshProjects();
   </script>
 </body>
 </html>
+

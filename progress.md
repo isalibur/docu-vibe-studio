@@ -69,5 +69,22 @@
 
 ## 🏆 ESTADO ATUAL DO PROJETO: 100% OPERACIONAL
 O **Docu-Vibe-Studio** está completamente funcional, testado, calibrado para a máquina do usuário e versionado no GitHub.
-Qualquer documentário agora pode ser gerado com um único comando:
-`python main.py --topic "Seu Tema Aqui"`
+
+---
+
+## Sessão: 13/10/2026 - Resolução da Amostra Repetida & Integração Completa Híbrida
+- [x] **Diagnóstico Completo da Falha Reportada:**
+  - O fallback do `ScriptDirector` repetia o texto fixo de 2008 (Crise Subprime) quando nenhuma chave LLM estava configurada no `.env`.
+  - O Whisper Aligner utilizava `vad_filter=True` sobre áudio já cortado, descartando a fala e resultando em 0 palavras e legendas vazias.
+  - O filtro de legendas `.ass` no FFmpeg não estava sendo anexado aos argumentos de renderização.
+  - O Estágio 4 não estava acionando a busca no Wikimedia Commons nem o recorte Parallax 2.5D com `rembg` no fluxo orquestrado do `main.py`.
+  - O player web mantinha cache do arquivo MP4 sem timestamp de invalidação.
+- [x] **Correções Implementadas e Validadas:**
+  - `src/stage1_director/script_director.py`: Roteirizador inteligente dinâmico criado. Mesmo 100% offline ou sem API Key externa, analisa o tema fornecido e constrói roteiro, manchete, gráficos e queries históricas sobre o tema exato (ex: Vesúvio de Pompeia).
+  - `src/stage3_captions/aligner.py`: Desativado `vad_filter`, modelo ajustado para `base` em CPU/int8 com extração garantida de dezenas de palavras sincronizadas.
+  - `src/stage6_assembler/ffmpeg_composer.py`: Unificado `-filter_complex` para queima de legendas `.ass` dinâmicas e sidechain ducking simultâneos via NVENC.
+  - `main.py`: Integrada esteira híbrida com Wikimedia Commons + Remotion `DocumentaryParallax` com recorte de primeiro plano via `rembg`.
+  - `src/ui/server.py` e `src/ui/static/index.html`: Adicionado cache-busting `?t=${Date.now()}`, formulário para salvar `GEMINI_API_KEY` direto pela interface web e repasse de preferências.
+- [x] **Gating Test do Caso Real:**
+  - Execução ponta a ponta do tema *"O vesúvio de pompeia"* gerando `workspace/doc_vesuvio_test/output/doc_vesuvio_test_MASTER.mp4` (14.6 MB) e regenerando `workspace/doc_62287/output/doc_62287_MASTER.mp4`.
+  - Vídeos contêm narração jornalística sobre Pompeia e Vesúvio, manchete 3D animada, gráfico de dados de impacto, imagem real de alta resolução de Pompeia animada em Parallax 2.5D e legendas ciano sincronizadas palavra por palavra.

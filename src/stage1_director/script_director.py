@@ -69,6 +69,7 @@ class ScriptDirector:
         Dispara chamada via LiteLLM para gerar o roteiro estruturado.
         Caso chaves de API não estejam configuradas, recorre ao gerador determinístico inteligente de demonstração.
         """
+        load_dotenv(override=True)
         has_gemini = bool(os.getenv("GEMINI_API_KEY"))
         has_groq = bool(os.getenv("GROQ_API_KEY"))
 
@@ -128,23 +129,35 @@ class ScriptDirector:
         return manifest
 
     def _generate_fallback_template(self, topic: str, project_id: str, title: Optional[str]) -> ProjectManifest:
-        """Gera um roteiro exemplar de 3 cenas equilibrando Manchete, Gráfico de Dados e Parallax."""
+        """
+        Gera um roteiro dinâmico e inteligente baseado no tema fornecido pelo usuário,
+        equilibrando Manchete 3D, Gráfico de Análise e Parallax Histórico 2.5D.
+        Garante que mesmo sem chave de API externa, o conteúdo reflita fielmente o tema escolhido.
+        """
+        clean_topic = topic.strip()
+        words = [w for w in re.split(r"\s+", clean_topic) if len(w) > 2]
+        highlight = " ".join(words[:3]).upper() if words else clean_topic.upper()
+        
+        # Cria termos de busca para acervos históricos
+        clean_query = re.sub(r"[^\w\s]", "", clean_topic)
+
         manifest = ProjectManifest(
             project_id=project_id,
-            title=title or f"Investigação: {topic}",
+            title=title or f"Investigação: {clean_topic}",
             scenes=[
                 SceneItem(
                     scene_id=1,
-                    narration_text=f"Em menos de quarenta e oito horas, quarenta bilhões de dólares desapareceram dos mercados globais.",
+                    narration_text=f"Por trás dos registros oficiais sobre {clean_topic}, escondem-se detalhes cruciais que desafiam a versão convencional dos fatos.",
                     start_time=0.0,
-                    end_time=6.2,
+                    end_time=6.5,
                     visual_type=VisualTypeEnum.REMOTION_GRAPHIC,
                     visual_config=SceneVisualConfig(
                         template="NewspaperHighlight",
                         props={
-                            "headline": "MARKET CRASH: BILLIONS VANISH IN MINUTES",
-                            "source_label": "The Financial Journal - Edição Histórica",
-                            "highlight_words": "BILLIONS VANISH"
+                            "headline": f"REVELAÇÃO: O ENIGMA DE {clean_topic.upper()}",
+                            "source_label": "Arquivo Investigativo - Edição Histórica",
+                            "highlight_words": highlight,
+                            "date_label": "Dossiê Histórico Exclusivo"
                         }
                     ),
                     sfx=[
@@ -155,19 +168,19 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=2,
-                    narration_text="Para entender como a crise se alastrou, precisamos olhar para esta curva de exposição entre 2004 e 2008.",
-                    start_time=6.2,
-                    end_time=12.5,
+                    narration_text=f"Para compreender o impacto real gerado em torno de {clean_topic}, precisamos analisar a escala e a progressão dos dados registrados.",
+                    start_time=6.5,
+                    end_time=13.0,
                     visual_type=VisualTypeEnum.REMOTION_GRAPHIC,
                     visual_config=SceneVisualConfig(
                         template="DataChartCard",
                         props={
-                            "headline": "Exposição de Ativos Tóxicos (US$ Trilhões)",
-                            "source_label": "Fonte: Relatório da Comissão de Inquérito Econômico",
+                            "headline": f"Escala de Impacto: {clean_topic.title()}",
+                            "source_label": "Fonte: Registros Documentais e Análises Históricas",
                             "data_points": [
-                                {"year": "2004", "value": 1.2},
-                                {"year": "2006", "value": 4.8},
-                                {"year": "2008", "value": 12.4}
+                                {"year": "Fase 1", "value": 2.5},
+                                {"year": "Fase 2", "value": 7.8},
+                                {"year": "Pico", "value": 14.2}
                             ]
                         }
                     ),
@@ -178,13 +191,14 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=3,
-                    narration_text="Nas ruas de Manhattan, o pânico começou muito antes do sino de abertura de Wall Street.",
-                    start_time=12.5,
-                    end_time=17.8,
-                    visual_type=VisualTypeEnum.STOCK_BROLL,
+                    narration_text=f"Até os dias de hoje, os vestígios e as evidências sobre {clean_topic} continuam a intrigar especialistas e a ecoar na história.",
+                    start_time=13.0,
+                    end_time=19.0,
+                    visual_type=VisualTypeEnum.PARALLAX_25D,
                     visual_config=SceneVisualConfig(
-                        search_query="wall street crowd traders panic morning",
-                        source="pexels"
+                        search_query=clean_query,
+                        source="wikimedia",
+                        camera_motion="push_in"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
@@ -194,3 +208,4 @@ class ScriptDirector:
         )
         manifest.stage_status.stage1_director = StageStatusEnum.COMPLETED
         return manifest
+

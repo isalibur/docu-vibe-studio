@@ -6,6 +6,7 @@ Suporta retomada inteligente por manifesto e execução de estágios individuais
 
 import argparse
 import sys
+import shutil
 from pathlib import Path
 from typing import Optional
 import logging
@@ -18,6 +19,7 @@ from src.stage2_audio.silence_cutter import SilenceCutter
 from src.stage3_captions.aligner import AudioAligner
 from src.stage3_captions.ass_generator import ASSGenerator
 from src.stage4_broll.pexels_fetcher import BrollFetcher
+from src.stage4_broll.wikimedia_fetcher import WikimediaFetcher
 from src.stage4_broll.parallax_segmenter import ParallaxSegmenter
 from src.stage5_motion.remotion_bridge import RemotionBridge
 from src.stage6_assembler.ffmpeg_composer import FFmpegComposer
@@ -27,7 +29,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("DocuVibeOrchestrator")
 
 
-def run_pipeline(topic: str, project_id: Optional[str] = None, stage: Optional[str] = None):
+def run_pipeline(
+    topic: str,
+    project_id: Optional[str] = None,
+    stage: Optional[str] = None,
+    voice: Optional[str] = None,
+    tone: Optional[str] = None,
+    local_assets_folder: Optional[str] = None
+):
     project_slug = project_id or f"doc_{abs(hash(topic)) % 100000}"
     workspace_dir = Path("workspace") / project_slug
     manifest_path = workspace_dir / "project_manifest.json"
@@ -55,7 +64,7 @@ def run_pipeline(topic: str, project_id: Optional[str] = None, stage: Optional[s
     # ---------------------------------------------------------
     if not stage or stage in ["2", "audio"]:
         logger.info("=== ESTÁGIO 2: SÍNTESE DE VOZ E CORTE DE SILÊNCIO ===")
-        tts = TTSEngine()
+        tts = TTSEngine(voice=voice or "pt-BR-AntonioNeural")
         audio_dir = workspace_dir / "audio"
         audio_dir.mkdir(parents=True, exist_ok=True)
 
@@ -79,7 +88,7 @@ def run_pipeline(topic: str, project_id: Optional[str] = None, stage: Optional[s
     # ---------------------------------------------------------
     if not stage or stage in ["3", "captions"]:
         logger.info("=== ESTÁGIO 3: SINCRONIA FONÉTICA E LEGENDAS .ASS ===")
-        aligner = AudioAligner(model_size="tiny", device="cpu")
+        aligner = AudioAligner(model_size="base", device="cpu", compute_type="int8")
         words = aligner.align_audio(Path(manifest.audio_master))
 
         captions_path = workspace_dir / "captions" / "dynamic_words.ass"
@@ -92,30 +101,114 @@ def run_pipeline(topic: str, project_id: Optional[str] = None, stage: Optional[s
         flush_vram()
 
     # ---------------------------------------------------------
-    # ESTÁGIO 4 & 5: Renderização de Cenas (B-Roll e Remotion)
+    # ESTÁGIO 4 & 5: Renderização de Cenas (Mídia Híbrida e Remotion)
     # ---------------------------------------------------------
     if not stage or stage in ["4", "5", "media", "motion"]:
         logger.info("=== ESTÁGIO 4 & 5: GERAÇÃO DE MÍDIA E MOTION GRAPHICS ===")
         broll_fetcher = BrollFetcher()
+        wiki_fetcher = WikimediaFetcher()
+        segmenter = ParallaxSegmenter()
         bridge = RemotionBridge(concurrency=4)
+        
         renders_dir = workspace_dir / "renders"
         renders_dir.mkdir(parents=True, exist_ok=True)
+        media_dir = workspace_dir / "media"
+        media_dir.mkdir(parents=True, exist_ok=True)
+        remotion_public_assets = Path("remotion_graphics/public/assets")
+        remotion_public_assets.mkdir(parents=True, exist_ok=True)
 
         for scene in manifest.scenes:
             out_clip = renders_dir / f"scene_{scene.scene_id:02d}.mp4"
             duration_frames = int(max(4.0, scene.duration_sec or 5.0) * manifest.fps)
+            query = scene.visual_config.search_query or topic
 
             if scene.visual_type == VisualTypeEnum.REMOTION_GRAPHIC:
-                template = scene.visual_config.template or "DataChartCard"
+                template = scene.visual_config.template or "NewspaperHighlight"
                 bridge.render_template(
                     composition_id=template,
                     output_path=out_clip,
                     props=scene.visual_config.props or {},
                     duration_in_frames=duration_frames
                 )
-            else:
-                query = scene.visual_config.search_query or "financial market traders"
-                broll_fetcher.fetch_video(query, out_clip, min_duration_sec=scene.duration_sec or 5.0)
+            elif scene.visual_type == VisualTypeEnum.PARALLAX_25D:
+                # 1. Verifica pasta local indicada pelo usuário
+                img_path = None
+                if local_assets_folder and Path(local_assets_folder).exists():
+                    for ext in ["*.jpg", "*.jpeg", "*.png", "*.webp"]:
+                        matches = list(Path(local_assets_folder).glob(ext))
+                        if matches:
+                            img_path = matches[0]
+                            break
+
+                # 2. Se não houver arquivo local, consulta o acervo do Wikimedia Commons
+                if not img_path:
+                    raw_wiki = media_dir / f"scene_{scene.scene_id:02d}_wiki.jpg"
+                    img_path = wiki_fetcher.fetch_image(query, raw_wiki)
+
+                if img_path and Path(img_path).exists():
+                    fg_temp = media_dir / f"scene_{scene.scene_id:02d}_fg.png"
+                    bg_temp = media_dir / f"scene_{scene.scene_id:02d}_bg.jpg"
+                    segmenter.process_image_for_parallax(img_path, fg_temp, bg_temp)
+
+                    # Copia para os assets públicos do Remotion
+                    public_fg = remotion_public_assets / f"{project_slug}_s{scene.scene_id:02d}_fg.png"
+                    public_bg = remotion_public_assets / f"{project_slug}_s{scene.scene_id:02d}_bg.jpg"
+                    shutil.copyfile(fg_temp, public_fg)
+                    shutil.copyfile(bg_temp, public_bg)
+
+                    bridge.render_template(
+                        composition_id="DocumentaryParallax",
+                        output_path=out_clip,
+                        props={
+                            "backgroundSrc": f"/assets/{public_bg.name}",
+                            "foregroundCutoutSrc": f"/assets/{public_fg.name}",
+                            "cameraMotion": scene.visual_config.camera_motion or "push_in"
+                        },
+                        duration_in_frames=duration_frames
+                    )
+                else:
+                    broll_fetcher.fetch_video(query, out_clip, min_duration_sec=scene.duration_sec or 5.0)
+
+            elif scene.visual_type == VisualTypeEnum.HISTORIC_MEDIA:
+                raw_wiki = media_dir / f"scene_{scene.scene_id:02d}_hist.jpg"
+                img_path = wiki_fetcher.fetch_image(query, raw_wiki)
+                if img_path and Path(img_path).exists():
+                    public_bg = remotion_public_assets / f"{project_slug}_s{scene.scene_id:02d}_hist.jpg"
+                    shutil.copyfile(img_path, public_bg)
+                    bridge.render_template(
+                        composition_id="DocumentaryParallax",
+                        output_path=out_clip,
+                        props={
+                            "backgroundSrc": f"/assets/{public_bg.name}",
+                            "cameraMotion": scene.visual_config.camera_motion or "push_in"
+                        },
+                        duration_in_frames=duration_frames
+                    )
+                else:
+                    broll_fetcher.fetch_video(query, out_clip, min_duration_sec=scene.duration_sec or 5.0)
+
+            else:  # STOCK_BROLL
+                # Se há chaves para Pexels/Pixabay, tenta vídeo
+                if broll_fetcher.pexels_api_key or broll_fetcher.pixabay_api_key:
+                    broll_fetcher.fetch_video(query, out_clip, min_duration_sec=scene.duration_sec or 5.0)
+                else:
+                    # Sem chaves externas: busca foto histórica e anima com Ken Burns 2.5D
+                    raw_wiki = media_dir / f"scene_{scene.scene_id:02d}_broll_wiki.jpg"
+                    img_path = wiki_fetcher.fetch_image(query, raw_wiki)
+                    if img_path and Path(img_path).exists():
+                        public_bg = remotion_public_assets / f"{project_slug}_s{scene.scene_id:02d}_broll.jpg"
+                        shutil.copyfile(img_path, public_bg)
+                        bridge.render_template(
+                            composition_id="DocumentaryParallax",
+                            output_path=out_clip,
+                            props={
+                                "backgroundSrc": f"/assets/{public_bg.name}",
+                                "cameraMotion": "drift_left"
+                            },
+                            duration_in_frames=duration_frames
+                        )
+                    else:
+                        broll_fetcher.fetch_video(query, out_clip, min_duration_sec=scene.duration_sec or 5.0)
 
             scene.rendered_clip_path = str(out_clip)
 
@@ -142,6 +235,7 @@ def run_pipeline(topic: str, project_id: Optional[str] = None, stage: Optional[s
         manifest.save(manifest_path)
 
         logger.info("\n🎉 DOCUMENTÁRIO FINAL GERADO COM SUCESSO!\n👉 Vídeo Final: %s\n👉 Timeline Kdenlive: %s", final_mp4, otio_path)
+
 
 
 if __name__ == "__main__":

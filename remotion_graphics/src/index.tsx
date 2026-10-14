@@ -11,10 +11,15 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="DocumentaryParallax"
         component={DocumentaryParallax}
-        durationInFrames={180} // 6 segundos a 30fps
+        durationInFrames={180}
         fps={30}
         width={1920}
         height={1080}
+        calculateMetadata={({ props }: { props: any }) => {
+          return {
+            durationInFrames: props.durationInFrames || 180,
+          };
+        }}
         defaultProps={{
           cameraMotion: 'push_in',
         } as DocumentaryParallaxProps}
@@ -28,6 +33,11 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+        calculateMetadata={({ props }: { props: any }) => {
+          return {
+            durationInFrames: props.durationInFrames || 180,
+          };
+        }}
         defaultProps={{
           headline: 'MARKET CRASH: BILLIONS VANISH IN MINUTES',
           source_label: 'The Financial Journal - Edição Histórica',
@@ -44,6 +54,11 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+        calculateMetadata={({ props }: { props: any }) => {
+          return {
+            durationInFrames: props.durationInFrames || 180,
+          };
+        }}
         defaultProps={{
           headline: 'Exposição de Ativos Tóxicos (US$ Trilhões)',
           source_label: 'Fonte: Relatório da Comissão de Inquérito Econômico',

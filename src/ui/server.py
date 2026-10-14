@@ -54,6 +54,11 @@ generation_state = {
 }
 
 
+class ApiKeysRequest(BaseModel):
+    gemini_key: Optional[str] = None
+    groq_key: Optional[str] = None
+
+
 def run_pipeline_task(req: GenerationRequest):
     global generation_state
     try:
@@ -61,10 +66,13 @@ def run_pipeline_task(req: GenerationRequest):
         generation_state["progress_percent"] = 10
         generation_state["log_message"] = "Escrevendo roteiro investigativo..."
 
-        # Executa o pipeline orquestrado
+        # Executa o pipeline orquestrado com todas as preferências do usuário
         orchestrator.run_pipeline(
             topic=req.topic,
-            project_id=req.project_id
+            project_id=req.project_id,
+            voice=req.voice,
+            tone=req.tone,
+            local_assets_folder=req.local_assets_folder
         )
 
         project_slug = req.project_id or f"doc_{abs(hash(req.topic)) % 100000}"
@@ -81,6 +89,49 @@ def run_pipeline_task(req: GenerationRequest):
         logger.error("Erro durante a geração: %s", str(e), exc_info=True)
         generation_state["status"] = "error"
         generation_state["log_message"] = f"Erro: {str(e)}"
+
+
+@app.get("/api/settings/keys")
+def get_api_keys_status():
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+    return {
+        "has_gemini": bool(os.getenv("GEMINI_API_KEY")),
+        "has_groq": bool(os.getenv("GROQ_API_KEY")),
+    }
+
+
+@app.post("/api/settings/keys")
+def save_api_keys(req: ApiKeysRequest):
+    import os
+    env_path = Path(".env")
+    lines = []
+    if env_path.exists():
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    
+    env_dict = {}
+    for line in lines:
+        if "=" in line and not line.strip().startswith("#"):
+            k, v = line.split("=", 1)
+            env_dict[k.strip()] = v.strip().strip('"').strip("'")
+            
+    if req.gemini_key is not None:
+        env_dict["GEMINI_API_KEY"] = req.gemini_key.strip()
+        os.environ["GEMINI_API_KEY"] = req.gemini_key.strip()
+    if req.groq_key is not None:
+        env_dict["GROQ_API_KEY"] = req.groq_key.strip()
+        os.environ["GROQ_API_KEY"] = req.groq_key.strip()
+
+    new_content = [
+        "# Docu-Vibe Studio Environment",
+        f'GEMINI_API_KEY="{env_dict.get("GEMINI_API_KEY", "")}"',
+        f'GROQ_API_KEY="{env_dict.get("GROQ_API_KEY", "")}"',
+        f'PEXELS_API_KEY="{env_dict.get("PEXELS_API_KEY", "")}"',
+        f'PIXABAY_API_KEY="{env_dict.get("PIXABAY_API_KEY", "")}"',
+    ]
+    env_path.write_text("\n".join(new_content) + "\n", encoding="utf-8")
+    return {"message": "Chaves salvas com sucesso no .env"}
 
 
 @app.get("/", response_class=HTMLResponse)

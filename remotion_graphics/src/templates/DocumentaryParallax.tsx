@@ -1,11 +1,21 @@
 import React from 'react';
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Img } from 'remotion';
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
 
 export interface DocumentaryParallaxProps {
   backgroundSrc?: string;
   foregroundCutoutSrc?: string;
   cameraMotion?: 'push_in' | 'drift_left' | 'dramatic_zoom';
 }
+
+const resolveSrc = (src?: string) => {
+  if (!src) return undefined;
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  try {
+    return staticFile(src.replace(/^\/+/, ''));
+  } catch {
+    return src;
+  }
+};
 
 export const DocumentaryParallax: React.FC<DocumentaryParallaxProps> = ({
   backgroundSrc,
@@ -29,24 +39,27 @@ export const DocumentaryParallax: React.FC<DocumentaryParallaxProps> = ({
   const fgScale = interpolate(progress, [0, 1], [1.0, 1.05]);
   const fgTranslateY = interpolate(progress, [0, 1], [0, -18]);
 
+  const resolvedBg = resolveSrc(backgroundSrc);
+  const resolvedFg = resolveSrc(foregroundCutoutSrc);
+
   return (
     <AbsoluteFill style={{ backgroundColor: '#0D0F12', overflow: 'hidden' }}>
       {/* Camada 1: Fundo com leve desfoque e escurecimento */}
-      {backgroundSrc ? (
+      {resolvedBg ? (
         <AbsoluteFill
           style={{
             transform: `scale(${bgScale}) translateX(${bgTranslateX}px)`,
             filter: 'blur(4px) brightness(0.85)',
           }}
         >
-          <Img src={backgroundSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Img src={resolvedBg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </AbsoluteFill>
       ) : (
         <AbsoluteFill style={{ backgroundColor: '#161920' }} />
       )}
 
       {/* Camada 2: Sujeito recortado com sombra dramática projetada */}
-      {foregroundCutoutSrc && (
+      {resolvedFg && (
         <AbsoluteFill
           style={{
             transform: `scale(${fgScale}) translateY(${fgTranslateY}px)`,
@@ -56,7 +69,7 @@ export const DocumentaryParallax: React.FC<DocumentaryParallaxProps> = ({
             justifyContent: 'center',
           }}
         >
-          <Img src={foregroundCutoutSrc} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+          <Img src={resolvedFg} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
         </AbsoluteFill>
       )}
 

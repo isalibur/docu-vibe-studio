@@ -31,10 +31,13 @@ class SilenceCutter:
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Monta comando do auto-editor
-        # Sintaxe do auto-editor para áudio: auto-editor input.wav --edit audio:threshold=4% --margin 0.12sec -o output.wav
+        import sys
+        # Tenta localizar no mesmo diretório do interpretador Python atual (.venv/Scripts)
+        venv_bin = Path(sys.executable).parent / "auto-editor.exe"
+        exe_cmd = str(venv_bin) if venv_bin.exists() else (shutil.which("auto-editor") or "auto-editor")
+
         cmd = [
-            shutil.which("auto-editor") or "auto-editor",
+            exe_cmd,
             str(input_path),
             "--edit", "audio:threshold=4%",
             "--margin", f"{self.margin}sec",

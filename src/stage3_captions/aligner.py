@@ -25,13 +25,13 @@ class WordTimestamp:
 class AudioAligner:
     def __init__(
         self,
-        model_size: str = "small",  # "small" ou "large-v3-turbo"
-        device: str = "cuda",
-        compute_type: str = "int8_float16"
+        model_size: str = "base",
+        device: str = "cpu",
+        compute_type: str = "int8"
     ):
         self.model_size = model_size
         self.device = device
-        self.compute_type = compute_type
+        self.compute_type = compute_type if device == "cuda" else "int8"
 
     def align_audio(self, audio_path: Path, language: str = "pt") -> List[WordTimestamp]:
         """
@@ -48,11 +48,11 @@ class AudioAligner:
             self.model_size, self.device, self.compute_type
         )
         
-        # Carrega modelo
+        # Carrega modelo com fallback robusto
         try:
             model = WhisperModel(self.model_size, device=self.device, compute_type=self.compute_type)
         except Exception as e:
-            logger.warning("Falha ao carregar no dispositivo CUDA (%s). Usando fallback em CPU.", str(e))
+            logger.warning("Falha ao carregar modelo configurado (%s). Usando fallback em CPU int8.", str(e))
             model = WhisperModel(self.model_size, device="cpu", compute_type="int8")
 
         words: List[WordTimestamp] = []
@@ -62,7 +62,7 @@ class AudioAligner:
                 language=language,
                 word_timestamps=True,
                 beam_size=5,
-                vad_filter=True
+                vad_filter=False
             )
 
             for segment in segments:

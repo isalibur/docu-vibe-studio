@@ -54,44 +54,43 @@ class FFmpegComposer:
                 f.write(f"file '{normalized}'\n")
 
         # 3. Monta comando FFmpeg com pipeline de áudio e vídeo
-        # Áudio: Narração principal + BGM com sidechaincompress (ducking)
         audio_master = manifest.audio_master
         bgm_track = manifest.bgm_track or "assets/bgm/dark_investigative_ambient.mp3"
         captions_ass = manifest.captions_ass
-
         video_encoder = self.encoder if use_nvenc else "libx264"
 
-        # Monta filtro de vídeo: Concatenação + queima de legenda .ass se existir
-        video_filters = []
-        if captions_ass and Path(captions_ass).exists():
-            ass_escaped = str(Path(captions_ass).resolve()).replace("\\", "/").replace(":", "\\:")
-            video_filters.append(f"subtitles='{ass_escaped}'")
-
-        vf_str = f"-vf \"{','.join(video_filters)}\"" if video_filters else ""
-
-        # Comando seguro de montagem
         cmd = [
             "ffmpeg", "-y",
             "-f", "concat", "-safe", "0", "-i", str(concat_list_path),
         ]
 
-        # Se houver áudio mestre narrado
+        filter_parts = []
+        video_map = "0:v"
+        if captions_ass and Path(captions_ass).exists():
+            ass_escaped = str(Path(captions_ass).resolve()).replace("\\", "/").replace(":", "\\:")
+            filter_parts.append(f"[0:v]subtitles='{ass_escaped}'[vout]")
+            video_map = "[vout]"
+
+        audio_map = None
         if audio_master and Path(audio_master).exists():
             cmd.extend(["-i", str(audio_master)])
-            # Se houver BGM, faz a mixagem com ducking
             if bgm_track and Path(bgm_track).exists():
                 cmd.extend(["-i", str(bgm_track)])
-                # Filtro de sidechain ducking: o canal 1 (narração) comprime o volume do canal 2 (música)
-                filter_complex = (
-                    "[2:a]volume=0.25[bgm];"
+                filter_parts.append(
+                    "[2:a]volume=0.22[bgm];"
                     "[bgm][1:a]sidechaincompress=threshold=0.08:ratio=6:attack=200:release=600[ducked_bgm];"
                     "[1:a][ducked_bgm]amix=inputs=2:duration=first:dropout_transition=2[aout]"
                 )
-                cmd.extend(["-filter_complex", filter_complex, "-map", "0:v", "-map", "[aout]"])
+                audio_map = "[aout]"
             else:
-                cmd.extend(["-map", "0:v", "-map", "1:a"])
-        else:
-            cmd.extend(["-map", "0:v"])
+                audio_map = "1:a"
+
+        if filter_parts:
+            cmd.extend(["-filter_complex", ";".join(filter_parts)])
+
+        cmd.extend(["-map", video_map])
+        if audio_map:
+            cmd.extend(["-map", audio_map])
 
         # Parâmetros de codificação de vídeo acelerada por hardware
         if use_nvenc:
@@ -112,11 +111,10 @@ class FFmpegComposer:
 
         cmd.extend(["-c:a", "aac", "-b:a", "192k", "-shortest", str(output_file)])
 
-        cmd_str = " ".join(cmd)
-        logger.info("Executando montagem mestre via FFmpeg: %s", cmd_str)
+        logger.info("Executando montagem mestre via FFmpeg: %s", " ".join(cmd))
 
         try:
-            subprocess.run(cmd_str, shell=True, check=True)
+            subprocess.run(cmd, check=True)
             logger.info("Documentário final masterizado com sucesso: %s", output_file)
         finally:
             if concat_list_path.exists():
