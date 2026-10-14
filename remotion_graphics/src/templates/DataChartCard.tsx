@@ -10,16 +10,18 @@ export interface DataChartCardProps {
   headline?: string;
   source_label?: string;
   data_points?: DataPoint[];
+  unit_label?: string;
 }
 
 export const DataChartCard: React.FC<DataChartCardProps> = ({
-  headline = 'Exposição de Ativos Tóxicos (US$ Trilhões)',
-  source_label = 'Fonte: Relatório da Comissão de Inquérito Econômico',
+  headline = 'Análise Quantitativa',
+  source_label = 'Fonte: Registros Documentais e Estatísticos',
   data_points = [
     { year: '2004', value: 1.2 },
     { year: '2006', value: 4.8 },
     { year: '2008', value: 12.4 },
   ],
+  unit_label = '',
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -33,7 +35,9 @@ export const DataChartCard: React.FC<DataChartCardProps> = ({
     extrapolateRight: 'clamp',
   });
 
-  const maxValue = Math.max(...data_points.map((d) => d.value), 15);
+  const rawMax = Math.max(...data_points.map((d) => d.value), 1);
+  const maxValue = rawMax * 1.25;
+
 
   return (
     <AbsoluteFill
@@ -131,8 +135,9 @@ export const DataChartCard: React.FC<DataChartCardProps> = ({
                     opacity: chartProgress,
                   }}
                 >
-                  {(point.value * chartProgress).toFixed(1)}T
+                  {(point.value * chartProgress).toFixed(1)}{unit_label}
                 </span>
+
 
                 {/* Barra Animada com gradiente */}
                 <div

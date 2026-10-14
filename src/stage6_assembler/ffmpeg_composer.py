@@ -45,45 +45,52 @@ class FFmpegComposer:
         if not clip_paths:
             raise FileNotFoundError("Nenhum clipe de vídeo renderizado encontrado no manifesto para montagem.")
 
-        # 2. Cria arquivo de concatenação temporário
-        concat_list_path = output_file.parent / "concat_list.txt"
-        with open(concat_list_path, "w", encoding="utf-8") as f:
-            for clip in clip_paths:
-                # FFmpeg concat requer barras normais
-                normalized = str(clip.resolve()).replace("\\", "/")
-                f.write(f"file '{normalized}'\n")
-
-        # 3. Monta comando FFmpeg com pipeline de áudio e vídeo
-        audio_master = manifest.audio_master
-        bgm_track = manifest.bgm_track or "assets/bgm/dark_investigative_ambient.mp3"
-        captions_ass = manifest.captions_ass
-        video_encoder = self.encoder if use_nvenc else "libx264"
-
-        cmd = [
-            "ffmpeg", "-y",
-            "-f", "concat", "-safe", "0", "-i", str(concat_list_path),
-        ]
-
+        # 2. Constrói entradas de vídeo e filtros de normalização
+        cmd = ["ffmpeg", "-y"]
         filter_parts = []
-        video_map = "0:v"
+
+        v_tags = []
+        for idx, clip in enumerate(clip_paths):
+            cmd.extend(["-i", str(clip.resolve())])
+            filter_parts.append(
+                f"[{idx}:v]scale=1920:1080:force_original_aspect_ratio=decrease,"
+                f"pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p[v{idx}]"
+            )
+            v_tags.append(f"[v{idx}]")
+
+        # Concatena todos os clipes de vídeo normalizados
+        concat_input = "".join(v_tags)
+        filter_parts.append(f"{concat_input}concat=n={len(clip_paths)}:v=1:a=0[vconcat]")
+
+        video_map = "[vconcat]"
+        captions_ass = manifest.captions_ass
         if captions_ass and Path(captions_ass).exists():
             ass_escaped = str(Path(captions_ass).resolve()).replace("\\", "/").replace(":", "\\:")
-            filter_parts.append(f"[0:v]subtitles='{ass_escaped}'[vout]")
+            filter_parts.append(f"[vconcat]subtitles='{ass_escaped}'[vout]")
             video_map = "[vout]"
 
+        # 3. Entradas de áudio e masterização sonora
+        audio_master = manifest.audio_master
+        bgm_track = manifest.bgm_track or "assets/bgm/dark_investigative_ambient.mp3"
+        video_encoder = self.encoder if use_nvenc else "libx264"
         audio_map = None
+
         if audio_master and Path(audio_master).exists():
+            audio_idx = len(clip_paths)
             cmd.extend(["-i", str(audio_master)])
             if bgm_track and Path(bgm_track).exists():
+                bgm_idx = audio_idx + 1
                 cmd.extend(["-i", str(bgm_track)])
                 filter_parts.append(
-                    "[2:a]volume=0.22[bgm];"
-                    "[bgm][1:a]sidechaincompress=threshold=0.08:ratio=6:attack=200:release=600[ducked_bgm];"
-                    "[1:a][ducked_bgm]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+                    f"[{audio_idx}:a]loudnorm=I=-14:TP=-1.5:LRA=7,asplit=2[voice_for_sc][voice_for_mix];"
+                    f"[{bgm_idx}:a]volume=0.07[bgm];"
+                    f"[bgm][voice_for_sc]sidechaincompress=threshold=0.04:ratio=8:attack=50:release=400[ducked_bgm];"
+                    f"[voice_for_mix][ducked_bgm]amix=inputs=2:duration=first:normalize=0[aout]"
                 )
                 audio_map = "[aout]"
             else:
-                audio_map = "1:a"
+                filter_parts.append(f"[{audio_idx}:a]loudnorm=I=-14:TP=-1.5:LRA=7[aout]")
+                audio_map = "[aout]"
 
         if filter_parts:
             cmd.extend(["-filter_complex", ";".join(filter_parts)])
@@ -113,11 +120,7 @@ class FFmpegComposer:
 
         logger.info("Executando montagem mestre via FFmpeg: %s", " ".join(cmd))
 
-        try:
-            subprocess.run(cmd, check=True)
-            logger.info("Documentário final masterizado com sucesso: %s", output_file)
-        finally:
-            if concat_list_path.exists():
-                concat_list_path.unlink()
+        subprocess.run(cmd, check=True)
+        logger.info("Documentário final masterizado com sucesso: %s", output_file)
 
         return output_file

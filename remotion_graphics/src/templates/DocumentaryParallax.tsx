@@ -41,15 +41,16 @@ export const DocumentaryParallax: React.FC<DocumentaryParallaxProps> = ({
 
   const resolvedBg = resolveSrc(backgroundSrc);
   const resolvedFg = resolveSrc(foregroundCutoutSrc);
+  const hasCutout = Boolean(resolvedFg);
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#0D0F12', overflow: 'hidden' }}>
-      {/* Camada 1: Fundo com leve desfoque e escurecimento */}
+      {/* Camada 1: Fundo com câmera suave (desfoque apenas se houver recorte em primeiro plano) */}
       {resolvedBg ? (
         <AbsoluteFill
           style={{
             transform: `scale(${bgScale}) translateX(${bgTranslateX}px)`,
-            filter: 'blur(4px) brightness(0.85)',
+            filter: `blur(${hasCutout ? '4px' : '0px'}) brightness(${hasCutout ? 0.85 : 1.0})`,
           }}
         >
           <Img src={resolvedBg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -57,6 +58,7 @@ export const DocumentaryParallax: React.FC<DocumentaryParallaxProps> = ({
       ) : (
         <AbsoluteFill style={{ backgroundColor: '#161920' }} />
       )}
+
 
       {/* Camada 2: Sujeito recortado com sombra dramática projetada */}
       {resolvedFg && (

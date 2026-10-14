@@ -13,7 +13,7 @@ logger = logging.getLogger("SilenceCutter")
 
 
 class SilenceCutter:
-    def __init__(self, min_silence_duration: float = 0.35, margin: float = 0.12):
+    def __init__(self, min_silence_duration: float = 0.40, margin: float = 0.28):
         """
         :param min_silence_duration: Silêncios maiores que isso em segundos serão cortados.
         :param margin: Margem de respiração antes/depois do corte para evitar cortes bruscos nas palavras.
@@ -46,7 +46,8 @@ class SilenceCutter:
         ]
 
         logger.info("Executando auto-editor: %s", " ".join(cmd))
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+
 
         if result.returncode != 0:
             logger.warning("Auto-editor falhou com log: %s. Aplicando fallback de cópia simples.", result.stderr)

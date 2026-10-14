@@ -24,30 +24,40 @@ class WikimediaFetcher:
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            # 1. Busca arquivos relevantes
-            params = {
-                "action": "query",
-                "format": "json",
-                "generator": "search",
-                "gsrsearch": f"filetype:bitmap {search_query}",
-                "gsrnamespace": "6",  # Namespace de Arquivos
-                "gsrlimit": "3",
-                "prop": "imageinfo",
-                "iiprop": "url|mime|size",
-                "iiurlwidth": "1920"  # Pede versão redimensionada para até 1920px
-            }
-            res = requests.get(self.endpoint, params=params, headers=self.headers, timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                pages = data.get("query", {}).get("pages", {})
-                for _, page in pages.items():
-                    imageinfo = page.get("imageinfo", [])
-                    if imageinfo:
-                        img_url = imageinfo[0].get("thumburl") or imageinfo[0].get("url")
-                        if img_url:
-                            logger.info("Mídia histórica localizada no Wikimedia: %s", img_url)
-                            self._download(img_url, output_path)
-                            return output_path
+            queries_to_try = [search_query]
+            words = search_query.split()
+            if len(words) > 2:
+                # Fallback para busca simplificada
+                queries_to_try.append(f"{words[0]} {words[1]}")
+                queries_to_try.append(words[0])
+
+            for q in queries_to_try:
+                params = {
+                    "action": "query",
+                    "format": "json",
+                    "generator": "search",
+                    "gsrsearch": q,
+                    "gsrnamespace": "6",  # Namespace de Arquivos
+                    "gsrlimit": "5",
+                    "prop": "imageinfo",
+                    "iiprop": "url|mime|size",
+                    "iiurlwidth": "1920"
+                }
+                res = requests.get(self.endpoint, params=params, headers=self.headers, timeout=10)
+                if res.status_code == 200:
+                    data = res.json()
+                    pages = data.get("query", {}).get("pages", {})
+                    for _, page in pages.items():
+                        imageinfo = page.get("imageinfo", [])
+                        if imageinfo:
+                            mime = imageinfo[0].get("mime", "")
+                            if not mime.startswith("image/") or "svg" in mime:
+                                continue
+                            img_url = imageinfo[0].get("thumburl") or imageinfo[0].get("url")
+                            if img_url:
+                                logger.info("Mídia histórica localizada no Wikimedia (query '%s'): %s", q, img_url)
+                                self._download(img_url, output_path)
+                                return output_path
 
             logger.info("Nenhuma imagem histórica encontrada para a busca: '%s'", search_query)
             return None

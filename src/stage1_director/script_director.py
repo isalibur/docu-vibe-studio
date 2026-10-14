@@ -29,27 +29,44 @@ from src.core.manifest import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("ScriptDirector")
 
-DIRECTOR_SYSTEM_PROMPT = """
-Você é um Diretor de Cinema e Roteirista Chefe especializado em documentários investigativos de alta retenção (estilo Vox, Johnny Harris, Fern, Magnates e Lemmino).
+DIRECTOR_SYSTEM_PROMPT = """Você é um Diretor de Cinema e Roteirista Chefe especializado em documentários cinematográficos de alta retenção (estilo Vox, Johnny Harris, Lemmino e BBC).
 
-Sua missão é transformar o TEMA ou TEXTO BRUTO fornecido pelo usuário em um ROTEIRO ESTRUTURADO dividido em cenas dinâmicas de 4 a 8 segundos.
+Sua missão é transformar o TEMA fornecido em um ROTEIRO CINEMATOGRÁFICO com 3 ou 4 cenas dinâmicas (4 a 8 segundos cada).
 
-REGRAS ESTÉTICAS E DIRETIVAS OBRIGATÓRIAS:
-1. RITMO E VARIAÇÃO VISUAL:
-   - Alterne constantemente os tipos visuais (`visual_type`):
-     * "remotion_graphic": Use quando houver dados numéricos, percentuais, datas históricas, manchetes de jornal para destacar com marca-texto ou mapas.
-     * "stock_broll": Use quando a narrativa descrever cidades, multidões, telas de computadores, escritórios, dinheiro ou ações cotidianas.
-     * "parallax_25d": Use quando a cena focar em uma figura histórica, retrato importante ou documento histórico recortado com sensação 3D.
-     * "historic_media": Use quando citar fotos históricas de domínio público ou eventos governamentais.
-2. TEMPLATES DISPONÍVEIS PARA "remotion_graphic":
-   - "DataChartCard": Gráficos de barras ou linhas evolutivas com fonte de dados no rodapé.
-   - "NewspaperHighlight": Manchete de jornal em perspectiva com caneta marca-texto animada cobrindo palavras-chave.
-   - "TimelineEvent": Linha do tempo horizontal deslizante entre marcos históricos.
-   - "MapZoomScene": Mapa vetorial com zoom suave e indicador geográfico.
-3. SOUND DESIGN (SFX):
-   - Associe pelo menos 1 ou 2 efeitos sonoros por cena para enfatizar cortes e impactos ("whoosh_deep.wav", "paper_slide.wav", "marker_highlight.wav", "digital_beep.wav", "sub_bass_hit.wav", "camera_shutter.wav").
-4. FORMATO DE SAÍDA:
-   - Responda ESTRITAMENTE em formato JSON puro, sem marcações markdown de bloco de código (sem ```json), respeitando o schema fornecido.
+REGRAS OBRIGATÓRIAS DE COERÊNCIA CONTEXTUAL E VISUAL:
+1. SE O TEMA FOR HISTÓRICO ANTIGO, NATURAL OU ARQUEOLÓGICO (ex: Pompeia, Vulcão Vesúvio, Roma Antiga, Grécia, Dinossauros):
+   - NUNCA use "remotion_graphic" com templates de "NewspaperHighlight" (jornais modernos impressos com manchetes sensacionalistas NÃO existiam na antiguidade!).
+   - NUNCA use "DataChartCard" com cifrões ou trilhões de dólares.
+   - USE "historic_media" (afrescos, pinturas clássicas, ruínas arqueológicas, mapas antigos de época).
+   - USE "parallax_25d" (estátuas romanas, bustos, o próprio vulcão ou ruínas com efeito de profundidade 3D).
+   - USE "stock_broll" (paisagens vulcânicas, cinzas, mar, escavações).
+   - Em "search_query", forneça termos em inglês claros e descritivos para o acervo histórico (ex: "Mount Vesuvius ancient eruption painting", "Pompeii archaeological ruins aerial").
+
+2. SE O TEMA FOR MODERNO (século XX e XXI, política, escândalos, crimes contemporâneos):
+   - Pode usar "NewspaperHighlight" para manchetes históricas de jornais da época.
+   - Pode usar "DataChartCard" para dados numéricos com unidade condizente.
+
+3. SCHEMA OBRIGATÓRIO (JSON PURO):
+{
+  "title": "Título Imersivo do Documentário",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "narration_text": "Texto fluído, cinematográfico, natural e dramático em português.",
+      "start_time": 0.0,
+      "end_time": 6.5,
+      "visual_type": "historic_media",
+      "visual_config": {
+        "search_query": "Pompeii ancient ruins sunset",
+        "camera_motion": "push_in",
+        "template": null,
+        "props": {}
+      },
+      "sfx": [{"name": "whoosh_deep.wav", "offset_sec": 0.0}]
+    }
+  ]
+}
+Responda EXCLUSIVAMENTE com o JSON válido, sem texto fora das chaves.
 """
 
 
@@ -64,41 +81,73 @@ class ScriptDirector:
                 return yaml.safe_load(f)
         return {}
 
+    def _is_ollama_available(self) -> bool:
+        """Verifica se o servidor local Ollama está ativo na porta 11434."""
+        try:
+            import requests
+            r = requests.get("http://127.0.0.1:11434/api/tags", timeout=1.5)
+            return r.status_code == 200
+        except Exception:
+            return False
+
     def generate_script(self, topic_or_text: str, project_id: str, title: Optional[str] = None) -> ProjectManifest:
         """
-        Dispara chamada via LiteLLM para gerar o roteiro estruturado.
-        Caso chaves de API não estejam configuradas, recorre ao gerador determinístico inteligente de demonstração.
+        Dispara chamada para IA local (Ollama Qwen 2.5) ou remota (Gemini/Groq)
+        para gerar roteiro com fidelidade contextual e estética investigativa.
         """
         load_dotenv(override=True)
+        import litellm
+
+        # 1. Prioridade A: IA Local no Hardware (Ollama Qwen 2.5 3B) - Zero custo, 100% privado e veloz
+        if self._is_ollama_available():
+            try:
+                logger.info("Executando roteirização via IA Local no hardware (Ollama: qwen2.5:3b)...")
+                response = litellm.completion(
+                    model="ollama_chat/qwen2.5:3b",
+                    messages=[
+                        {"role": "system", "content": DIRECTOR_SYSTEM_PROMPT},
+                        {"role": "user", "content": f"Tema do documentário: {topic_or_text}\n\nGere o JSON completo de cenas para este tema."}
+                    ],
+                    api_base="http://127.0.0.1:11434",
+                    temperature=0.3,
+                )
+                raw_content = response.choices[0].message.content.strip()
+                raw_json = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_content, flags=re.MULTILINE).strip()
+                parsed = json.loads(raw_json)
+                logger.info("Roteiro contextual gerado com sucesso pela IA Local!")
+                return self._build_manifest_from_parsed(parsed, project_id, title or topic_or_text)
+            except Exception as e:
+                logger.warning("Falha na chamada ao Ollama local (%s). Testando provedores alternativos.", str(e))
+
+        # 2. Prioridade B: LiteLLM com Provedores de Nuvem (Gemini / Groq)
         has_gemini = bool(os.getenv("GEMINI_API_KEY"))
         has_groq = bool(os.getenv("GROQ_API_KEY"))
 
         if has_gemini or has_groq:
             try:
-                import litellm
                 model_name = self.config.get("llm", {}).get("primary_provider", "gemini/gemini-2.5-flash")
                 if not has_gemini and has_groq:
                     model_name = self.config.get("llm", {}).get("fallback_provider", "groq/llama-3.3-70b-versatile")
 
-                logger.info("Solicitando roteiro investigativo ao modelo: %s", model_name)
+                logger.info("Solicitando roteiro investigativo ao modelo em nuvem: %s", model_name)
                 response = litellm.completion(
                     model=model_name,
                     messages=[
                         {"role": "system", "content": DIRECTOR_SYSTEM_PROMPT},
                         {"role": "user", "content": f"Tema do documentário: {topic_or_text}\n\nGere o JSON completo de cenas para este tema."}
                     ],
-                    temperature=0.7,
+                    temperature=0.5,
                 )
                 raw_content = response.choices[0].message.content.strip()
-                # Remove cercas de código markdown se o modelo incluir
                 raw_json = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_content, flags=re.MULTILINE).strip()
                 parsed = json.loads(raw_json)
                 return self._build_manifest_from_parsed(parsed, project_id, title or topic_or_text)
             except Exception as e:
-                logger.warning("Falha na chamada LLM externa (%s). Utilizando gerador modelo padrão investigativo.", str(e))
+                logger.warning("Falha na chamada LLM em nuvem (%s).", str(e))
 
-        logger.info("Chaves de API não detectadas. Gerando roteiro demonstrativo com arquitetura cinematográfica completa.")
+        logger.info("Utilizando gerador determinístico inteligente de demonstração.")
         return self._generate_fallback_template(topic_or_text, project_id, title)
+
 
     def _build_manifest_from_parsed(self, data: dict, project_id: str, title: str) -> ProjectManifest:
         scenes = []
@@ -131,20 +180,66 @@ class ScriptDirector:
     def _generate_fallback_template(self, topic: str, project_id: str, title: Optional[str]) -> ProjectManifest:
         """
         Gera um roteiro dinâmico e inteligente baseado no tema fornecido pelo usuário,
-        equilibrando Manchete 3D, Gráfico de Análise e Parallax Histórico 2.5D.
-        Garante que mesmo sem chave de API externa, o conteúdo reflita fielmente o tema escolhido.
+        com estrita coerência de época e contexto.
         """
         clean_topic = topic.strip()
+        lower_t = clean_topic.lower()
         words = [w for w in re.split(r"\s+", clean_topic) if len(w) > 2]
-        highlight = " ".join(words[:3]).upper() if words else clean_topic.upper()
-        
-        # Cria termos de busca para acervos históricos
         clean_query = re.sub(r"[^\w\s]", "", clean_topic)
 
-        manifest = ProjectManifest(
-            project_id=project_id,
-            title=title or f"Investigação: {clean_topic}",
-            scenes=[
+        # Detecta se é tema histórico antigo, natural ou arqueológico
+        ancient_keywords = ["vesúvio", "vesuvio", "pompeia", "pompeii", "roma", "romano", "grécia", "grego", "egito", "faraó", "antigo", "antiguidade", "dinossauro", "vulcão", "vulcao", "arqueolog", "império romano"]
+        is_ancient = any(k in lower_t for k in ancient_keywords)
+
+        if is_ancient:
+            scenes = [
+                SceneItem(
+                    scene_id=1,
+                    narration_text=f"Sob o céu da Campânia romana, {clean_topic} guardava uma força oculta prestes a transformar para sempre o curso da história.",
+                    start_time=0.0,
+                    end_time=6.5,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
+                    visual_config=SceneVisualConfig(
+                        search_query=f"{clean_query} ancient ruins painting",
+                        camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="sub_bass_hit.wav", offset_sec=0.0),
+                        SFXEvent(name="whoosh_deep.wav", offset_sec=1.5)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=2,
+                    narration_text=f"Em questão de horas, a força avassaladora da natureza soterrou cidades inteiras, congelando vidas e monumentos no tempo.",
+                    start_time=6.5,
+                    end_time=13.0,
+                    visual_type=VisualTypeEnum.PARALLAX_25D,
+                    visual_config=SceneVisualConfig(
+                        search_query=f"{clean_query} volcano eruption",
+                        camera_motion="push_in"
+                    ),
+                    sfx=[
+                        SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
+                    ]
+                ),
+                SceneItem(
+                    scene_id=3,
+                    narration_text=f"Hoje, os vestígios arqueológicos preservados sob metros de cinzas revelam ao mundo moderno os segredos intactos dessa tragédia.",
+                    start_time=13.0,
+                    end_time=19.5,
+                    visual_type=VisualTypeEnum.HISTORIC_MEDIA,
+                    visual_config=SceneVisualConfig(
+                        search_query=f"{clean_query} archaeological excavation ruins",
+                        camera_motion="drift_left"
+                    ),
+                    sfx=[
+                        SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
+                    ]
+                )
+            ]
+        else:
+            highlight = " ".join(words[:3]).upper() if words else clean_topic.upper()
+            scenes = [
                 SceneItem(
                     scene_id=1,
                     narration_text=f"Por trás dos registros oficiais sobre {clean_topic}, escondem-se detalhes cruciais que desafiam a versão convencional dos fatos.",
@@ -154,10 +249,10 @@ class ScriptDirector:
                     visual_config=SceneVisualConfig(
                         template="NewspaperHighlight",
                         props={
-                            "headline": f"REVELAÇÃO: O ENIGMA DE {clean_topic.upper()}",
-                            "source_label": "Arquivo Investigativo - Edição Histórica",
+                            "headline": f"REVELAÇÃO: O CASO DE {clean_topic.upper()}",
+                            "source_label": "Arquivo Investigativo - Edição Especial",
                             "highlight_words": highlight,
-                            "date_label": "Dossiê Histórico Exclusivo"
+                            "date_label": "Dossiê Exclusivo"
                         }
                     ),
                     sfx=[
@@ -168,21 +263,13 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=2,
-                    narration_text=f"Para compreender o impacto real gerado em torno de {clean_topic}, precisamos analisar a escala e a progressão dos dados registrados.",
+                    narration_text=f"Para compreender a real dimensão dos acontecimentos em torno de {clean_topic}, os dados apontam para uma progressão dramática.",
                     start_time=6.5,
                     end_time=13.0,
-                    visual_type=VisualTypeEnum.REMOTION_GRAPHIC,
+                    visual_type=VisualTypeEnum.PARALLAX_25D,
                     visual_config=SceneVisualConfig(
-                        template="DataChartCard",
-                        props={
-                            "headline": f"Escala de Impacto: {clean_topic.title()}",
-                            "source_label": "Fonte: Registros Documentais e Análises Históricas",
-                            "data_points": [
-                                {"year": "Fase 1", "value": 2.5},
-                                {"year": "Fase 2", "value": 7.8},
-                                {"year": "Pico", "value": 14.2}
-                            ]
-                        }
+                        search_query=clean_query,
+                        camera_motion="push_in"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0),
@@ -191,21 +278,26 @@ class ScriptDirector:
                 ),
                 SceneItem(
                     scene_id=3,
-                    narration_text=f"Até os dias de hoje, os vestígios e as evidências sobre {clean_topic} continuam a intrigar especialistas e a ecoar na história.",
+                    narration_text=f"Até os dias de hoje, as consequências e os desdobramentos sobre {clean_topic} continuam a repercutir no cenário global.",
                     start_time=13.0,
                     end_time=19.0,
-                    visual_type=VisualTypeEnum.PARALLAX_25D,
+                    visual_type=VisualTypeEnum.STOCK_BROLL,
                     visual_config=SceneVisualConfig(
                         search_query=clean_query,
-                        source="wikimedia",
-                        camera_motion="push_in"
+                        camera_motion="drift_left"
                     ),
                     sfx=[
                         SFXEvent(name="whoosh_deep.wav", offset_sec=0.0)
                     ]
                 )
             ]
+
+        manifest = ProjectManifest(
+            project_id=project_id,
+            title=title or f"Documentário: {clean_topic}",
+            scenes=scenes
         )
         manifest.stage_status.stage1_director = StageStatusEnum.COMPLETED
         return manifest
+
 
