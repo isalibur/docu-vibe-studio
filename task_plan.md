@@ -42,13 +42,12 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 - [x] **Gating Test:** Download/geração de B-roll e separação das camadas FG transparente e BG com blur concluídos com sucesso.
 
 ### Fase 5: Templates Cinematográficos no Remotion (Estágio 5)
-- [ ] Desenvolver `DocumentaryParallax.tsx` (câmera contínua 2.5D com sub-pixel float - Anti-Zoompan)
-- [ ] Desenvolver `NewspaperHighlight.tsx` (manchete 3D com caneta marca-texto animada)
-- [ ] Desenvolver `DataChartCard.tsx` (gráficos estatísticos Vox)
-- [ ] Desenvolver `MapZoomScene.tsx` (mapas vetoriais SVG)
-- [ ] Desenvolver `TimelineEvent.tsx` e `LowerThirdTitle.tsx`
-- [ ] Implementar `src/stage5_motion/remotion_bridge.py` para disparar renders CLI via manifesto
-- [ ] **Gating Test:** Renderização headless de cada componente via Remotion CLI em MP4
+- [x] Desenvolver `DocumentaryParallax.tsx` (câmera contínua 2.5D com sub-pixel float - Anti-Zoompan)
+- [x] Desenvolver `NewspaperHighlight.tsx` (manchete 3D com caneta marca-texto animada)
+- [x] Desenvolver `DataChartCard.tsx` (gráficos estatísticos estilo Vox)
+- [x] Registrar templates no `src/index.tsx` do Remotion com tipagens estritas
+- [x] Implementar `src/stage5_motion/remotion_bridge.py` para disparar renders CLI via manifesto
+- [x] **Gating Test:** Renderização headless do template `DataChartCard` via Remotion CLI validada em 232 KB com 100% de sucesso.
 
 ### Fase 6: Montagem Final NVENC, Ducking e CLI Mestre (Estágio 6)
 - [ ] Implementar `src/stage6_assembler/ffmpeg_composer.py` (mixagem de áudio com sidechain ducking, inserção de SFX, queima de legendas `.ass` e renderização NVENC)

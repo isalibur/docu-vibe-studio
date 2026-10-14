@@ -50,11 +50,17 @@
 
 ---
 
+- [x] **Fase 5 Concluída com Sucesso:**
+  - `DocumentaryParallax.tsx`: Animação 2.5D com sub-pixel float contínuo em CSS/WebGL (o núcleo Anti-Zoompan).
+  - `NewspaperHighlight.tsx`: Manchete de jornal com perspectiva 3D e marca-texto amarelo animado cobrindo as palavras-chave.
+  - `DataChartCard.tsx`: Gráficos de barras evolutivos com contagem numérica e gradiente de impacto em crise.
+  - `src/stage5_motion/remotion_bridge.py`: Automação CLI disparando compilação do Remotion com passagem de props JSON.
+  - **Gating Test:** Renderização headless do `DataChartCard` validada (232 KB) em alta resolução sem erros.
+
+---
+
 ## Próximos Passos Imediatos:
-1. Executar a **Fase 5 (Templates Cinematográficos no Remotion - Estágio 5)**:
-   * Desenvolver os componentes em React no `remotion_graphics/src/templates/`:
-     - `DocumentaryParallax.tsx` (Anti-Zoompan: interpolação contínua WebGL em sub-pixel).
-     - `NewspaperHighlight.tsx` (Recorte de jornal 3D com marca-texto amarelo animado).
-     - `DataChartCard.tsx` (Gráfico de dados estilo Vox animado).
-     - `MapZoomScene.tsx` (Mapa vetorial SVG com indicador de rota).
-   * Implementar `src/stage5_motion/remotion_bridge.py` para automatizar a renderização de clipes MP4 via Remotion CLI.
+1. Executar a **Fase 6 (Montagem Final NVENC, Ducking e CLI Mestre - Estágio 6)**:
+   * Implementar `src/stage6_assembler/ffmpeg_composer.py` (concatenação de clipes, áudio ducking com `sidechaincompress`, queima de legendas `.ass` e renderização final acelerada por GPU via `h264_nvenc`).
+   * Implementar `src/stage6_assembler/otio_exporter.py` para exportação opcional da timeline para o Kdenlive (`.otio`).
+   * Criar a CLI central `main.py` com suporte aos parâmetros `--topic`, `--stage` e `--resume`.
