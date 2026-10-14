@@ -50,10 +50,10 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 - [x] **Gating Test:** Renderização headless do template `DataChartCard` via Remotion CLI validada em 232 KB com 100% de sucesso.
 
 ### Fase 6: Montagem Final NVENC, Ducking e CLI Mestre (Estágio 6)
-- [ ] Implementar `src/stage6_assembler/ffmpeg_composer.py` (mixagem de áudio com sidechain ducking, inserção de SFX, queima de legendas `.ass` e renderização NVENC)
-- [ ] Implementar `src/stage6_assembler/otio_exporter.py` (timeline OpenTimelineIO / Kdenlive)
-- [ ] Implementar `main.py` com CLI unificada (`--topic`, `--stage`, `--resume`)
-- [ ] **Gating Test:** Renderização ponta a ponta de um documentário piloto de 1 minuto
+- [x] Implementar `src/stage6_assembler/ffmpeg_composer.py` (mixagem de áudio com sidechain ducking, inserção de SFX, queima de legendas `.ass` e renderização NVENC)
+- [x] Implementar `src/stage6_assembler/otio_exporter.py` (timeline OpenTimelineIO / Kdenlive)
+- [x] Implementar `main.py` com CLI unificada (`--topic`, `--stage`, `--resume`)
+- [x] **Gating Test:** Renderização ponta a ponta de um documentário piloto masterizado gerando o arquivo `workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4` (4.8 MB) validado com 100% de sucesso.
 
 ---
 

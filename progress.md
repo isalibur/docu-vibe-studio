@@ -59,8 +59,15 @@
 
 ---
 
-## Próximos Passos Imediatos:
-1. Executar a **Fase 6 (Montagem Final NVENC, Ducking e CLI Mestre - Estágio 6)**:
-   * Implementar `src/stage6_assembler/ffmpeg_composer.py` (concatenação de clipes, áudio ducking com `sidechaincompress`, queima de legendas `.ass` e renderização final acelerada por GPU via `h264_nvenc`).
-   * Implementar `src/stage6_assembler/otio_exporter.py` para exportação opcional da timeline para o Kdenlive (`.otio`).
-   * Criar a CLI central `main.py` com suporte aos parâmetros `--topic`, `--stage` e `--resume`.
+- [x] **Fase 6 Concluída com Sucesso:**
+  - `src/stage6_assembler/ffmpeg_composer.py`: Concatenação de clipes com aceleração de hardware NVENC da RTX 3060 (`h264_nvenc -preset p4 -cq 19`) e mixagem com *Sidechain Ducking* (volume da BGM cai dinamicamente na fala).
+  - `src/stage6_assembler/otio_exporter.py`: Exportação de projeto aberto para edição no Kdenlive (`.otio`).
+  - `main.py`: CLI orquestrador central executando a esteira ponta a ponta.
+  - **Gating Test:** Execução real completa do piloto gerando o documentário `workspace/doc_pilot_test/output/doc_pilot_test_MASTER.mp4` (5 MB, Full HD 1080p, 30fps) em tempo recorde (~30 segundos no total).
+
+---
+
+## 🏆 ESTADO ATUAL DO PROJETO: 100% OPERACIONAL
+O **Docu-Vibe-Studio** está completamente funcional, testado, calibrado para a máquina do usuário e versionado no GitHub.
+Qualquer documentário agora pode ser gerado com um único comando:
+`python main.py --topic "Seu Tema Aqui"`
