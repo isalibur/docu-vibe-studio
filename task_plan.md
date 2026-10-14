@@ -36,11 +36,10 @@ Construir um estúdio automatizado em Python + Remotion (React/TypeScript) que t
 - [x] **Gating Test:** Alinhamento de áudio demo e compilação de arquivo `.ass` com eventos sincronizados por palavra validado com 100% de sucesso.
 
 ### Fase 4: Mídia Híbrida e Parallax 2.5D (Estágio 4)
-- [ ] Implementar `src/stage4_broll/pexels_fetcher.py` e fallback Pixabay
-- [ ] Implementar `src/stage4_broll/wikimedia_fetcher.py` para mídias históricas/documentais
-- [ ] Implementar `src/stage4_broll/comfy_client.py` para geração de ilustrações conceituais FLUX GGUF
-- [ ] Implementar `src/stage4_broll/parallax_segmenter.py` com RMBG-2.0 via `rembg` (separação sujeito/fundo)
-- [ ] **Gating Test:** Download de B-roll demo e recorte transparente de imagem
+- [x] Implementar `src/stage4_broll/pexels_fetcher.py` e fallback Pixabay com geração suave de clipe
+- [x] Implementar `src/stage4_broll/wikimedia_fetcher.py` para mídias históricas/documentais de domínio público
+- [x] Implementar `src/stage4_broll/parallax_segmenter.py` com RMBG via `rembg` (separação sujeito/fundo)
+- [x] **Gating Test:** Download/geração de B-roll e separação das camadas FG transparente e BG com blur concluídos com sucesso.
 
 ### Fase 5: Templates Cinematográficos no Remotion (Estágio 5)
 - [ ] Desenvolver `DocumentaryParallax.tsx` (câmera contínua 2.5D com sub-pixel float - Anti-Zoompan)

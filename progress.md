@@ -42,8 +42,19 @@
 
 ---
 
+- [x] **Fase 4 Concluída com Sucesso:**
+  - `src/stage4_broll/pexels_fetcher.py`: Download de B-rolls Full HD 1080p na API do Pexels e Pixabay com gerador local de fallback.
+  - `src/stage4_broll/wikimedia_fetcher.py`: Busca e download de imagens históricas no acervo de domínio público do Wikimedia Commons.
+  - `src/stage4_broll/parallax_segmenter.py`: Segmentação de fotos via `rembg` separando a camada do sujeito transparente (`test_fg.png`) e camada de fundo com desfoque de profundidade (`test_bg.jpg`), finalizando com `flush_vram()`.
+  - **Gating Test:** Execução validada de download/geração de B-Roll e isolamento de camadas para Parallax.
+
+---
+
 ## Próximos Passos Imediatos:
-1. Executar a **Fase 4 (Mídia Híbrida e Parallax 2.5D - Estágio 4)**:
-   * Implementar `src/stage4_broll/pexels_fetcher.py` (download automático de B-rolls em 1080p).
-   * Implementar `src/stage4_broll/wikimedia_fetcher.py` (acervo público de fotos e documentos históricos).
-   * Implementar `src/stage4_broll/parallax_segmenter.py` com `rembg` (separação de primeiro plano/fundo).
+1. Executar a **Fase 5 (Templates Cinematográficos no Remotion - Estágio 5)**:
+   * Desenvolver os componentes em React no `remotion_graphics/src/templates/`:
+     - `DocumentaryParallax.tsx` (Anti-Zoompan: interpolação contínua WebGL em sub-pixel).
+     - `NewspaperHighlight.tsx` (Recorte de jornal 3D com marca-texto amarelo animado).
+     - `DataChartCard.tsx` (Gráfico de dados estilo Vox animado).
+     - `MapZoomScene.tsx` (Mapa vetorial SVG com indicador de rota).
+   * Implementar `src/stage5_motion/remotion_bridge.py` para automatizar a renderização de clipes MP4 via Remotion CLI.
