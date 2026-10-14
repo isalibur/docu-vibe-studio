@@ -1,0 +1,43 @@
+# Ambientes Virtuais e Dependências
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+node_modules/
+.npm/
+
+# Modelos, Pesos e Checkpoints Locais (Pesados)
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Dados Dinâmicos e Renders de Projetos (Workspace)
+workspace/*/audio/
+workspace/*/brolls/
+workspace/*/motion_renders/
+workspace/*/captions/
+workspace/*/output/
+output/
+*.mp4
+*.wav
+*.mp3
+*.ass
+
+# Arquivos de Chaves e Variáveis de Ambiente
+.env
+.env.local
+.env.*.local
+
+# Logs e Arquivos Temporários do Sistema
+*.log
+.DS_Store
+Thumbs.db
+.planning/
+tmp/
+dist/
+build/
