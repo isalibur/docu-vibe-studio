@@ -62,16 +62,21 @@ O objetivo deste projeto não é criar um "slideshow automatizado com voz robót
 
 ---
 
-### FASE 2: Motor de Narração Local de Alta Fidelidade (F5-TTS / Voz Local)
-* **Objetivo:** Eliminar a voz genérica acelerada e implementar síntese local humanizada, com pausas respiratórias e ritmo autêntico de documentário.
+### FASE 2: Motor de Narração Local de Alta Fidelidade (F5-TTS / Kokoro & Banco Multi-Vozes)
+* **Objetivo:** Eliminar a voz genérica acelerada e implementar síntese local humanizada, com suporte a **múltiplos perfis de voz clonada** e presets temáticos, com pausas respiratórias e ritmo autêntico de documentário.
 * **Tarefas de Engenharia:**
   1. Criar `src/stage2_audio/local_voice_engine.py` integrando com o ambiente `D:\IA\audio_factory\.venv`.
-  2. Suportar dois modos locais de alto padrão:
-     * **Modo A (Clonagem Zero-Shot F5-TTS):** Utiliza `D:\IA\audio_factory\models\voice_clone\models--SWivid--F5-TTS` e o áudio `D:\IA\audio_factory\voices\minha_voz_referencia.wav` ou `locutor_principal.wav`.
+  2. Implementar **Banco Dinâmico de Perfis de Voz (Voice Bank)**:
+     * O sistema deve escanear pastas de vozes (`assets/voices/` e `D:\IA\audio_factory\voices/`).
+     * Suporte para adicionar novas referências de áudio (`.wav`) pelo usuário a qualquer momento para combinar com diferentes temas (ex: narrador épico, investigativo, reflexivo, histórico).
+     * Descoberta automática de perfis com fallback inteligente para presets de alta qualidade.
+  3. Suportar os modos locais de alta fidelidade:
+     * **Modo A (Clonagem Zero-Shot F5-TTS):** Utiliza os checkpoints de `D:\IA\audio_factory\models\voice_clone\models--SWivid--F5-TTS` e a referência selecionada do perfil.
      * **Modo B (Kokoro TTS Local):** Síntese ultra-rápida e expressiva de alta fidelidade rodando em PyTorch local.
      * **Fallback Seguro (Edge-TTS Humanizado):** Taxa negativa (`rate="-2%"` ou `"-4%"` com pitch profundo) caso a GPU esteja reservada para geração de imagem.
-  3. Garantir inserção de silêncios naturais de respiração (0.4s a 0.6s) entre frases e pontos finais.
+  4. Garantir inserção de silêncios naturais de respiração (0.4s a 0.6s) entre frases e pontos finais.
 * **Quality Gate (Critério de Aceite):**
+  - O sistema descobre dinamicamente os perfis de voz disponíveis na pasta.
   - O áudio gerado deve soar humano, com cadência pausada (nunca acelerada) e zero artefatos de corte de consoantes.
   - Medição de taxa de fala entre 120 e 140 palavras por minuto.
 
@@ -134,7 +139,7 @@ O objetivo deste projeto não é criar um "slideshow automatizado com voz robót
 | Fase | Descrição | Status | Data Início | Data Conclusão | Evidências / Artefatos |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Fase 1** | Integração 9router (`localhost:20128`) | ✅ Concluída | 14/10/2026 20:49 | 14/10/2026 20:53 | Gating Test aprovado: 30s (3 cenas, 65 palavras) e 60s (6 cenas, 154 palavras). Conexão `arsenal` operacional. |
-| **Fase 2** | Motor de Voz Local / F5-TTS / Kokoro | ⏳ Pendente | — | — | — |
+| **Fase 2** | Motor de Voz Local / F5-TTS / Kokoro & Voice Bank | ✅ Concluída | 14/10/2026 20:56 | 14/10/2026 21:02 | Gating Test aprovado: 8 perfis no Voice Bank. Clonagem GPU (6.82s) e narrador solene (6.41s) gerados a 48kHz. |
 | **Fase 3** | Legendas Sintáticas por Pontuação | ⏳ Pendente | — | — | — |
 | **Fase 4** | Visual Híbrido e Templates Remotion | ⏳ Pendente | — | — | — |
 | **Fase 5** | Duração Parametrizada (30s / 60s) | ⏳ Pendente | — | — | — |

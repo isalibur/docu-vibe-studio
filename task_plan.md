@@ -27,10 +27,11 @@ Transformar o pipeline de vídeo em uma **esteira de produção cinematográfica
 - [x] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
 
 ### Fase 2: Motor de Narração Local (F5-TTS / Kokoro em `audio_factory`)
-- [ ] Criar ponte em `src/stage2_audio/local_voice_engine.py` aproveitando o venv de `D:\IA\audio_factory`.
-- [ ] Configurar voz de referência (`minha_voz_referencia.wav` ou `locutor_principal.wav`) e síntese com cadência pausada (~125-135 wpm).
-- [ ] **Gating Test 2:** Sintetizar áudio de teste de 30s e validar tom humano, ausência de aceleração e clareza acústica.
-- [ ] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
+- [x] Criar ponte em `src/stage2_audio/local_voice_engine.py` aproveitando o venv de `D:\IA\audio_factory`.
+- [x] Implementar Banco Dinâmico de Perfis de Voz (Voice Bank) em `assets/voices/` e `D:\IA\audio_factory\voices/`.
+- [x] Configurar voz de referência (`nova_ref_7s`, `minha_voz_referencia.wav`, `locutor_principal.wav`) e síntese com cadência pausada (~125-135 wpm).
+- [x] **Gating Test 2:** Sintetizar áudio de teste de 30s e validar tom humano, ausência de aceleração e clareza acústica.
+- [x] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
 
 ### Fase 3: Legendas com Agrupamento Sintático
 - [ ] Refatorar `src/stage3_captions/ass_generator.py` para agrupar por cláusulas e pontuação (`.`, `,`, `?`, `!`), abolindo o bloco fixo de 4 palavras.
