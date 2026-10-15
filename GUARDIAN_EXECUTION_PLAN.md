@@ -82,18 +82,23 @@ O objetivo deste projeto não é criar um "slideshow automatizado com voz robót
 
 ---
 
-### FASE 3: Reformulação das Legendas (Alinhamento Sintático por Pontuação)
-* **Objetivo:** Acabar com frases cortadas no meio da tela e sobreposição desconexa de palavras.
+### FASE 3: Reformulação das Legendas (Tipografia Cinematográfica & Tempo de Leitura Natural)
+* **Objetivo:** Eliminar o efeito karaokê/TikTok e implementar legendas elegantes de documentário (estilo BBC/Netflix), com tipografia limpa, quebras sintáticas perfeitas e tempo de leitura natural.
 * **Tarefas de Engenharia:**
   1. Refatorar completamente `src/stage3_captions/ass_generator.py`.
-  2. Substituir o loop fixo `words[i : i + 4]` por um **agrupador sintático**:
-     * Nova linha/bloco é forçada sempre que houver pontuação forte (`.`, `!`, `?`, `:`, `;`).
-     * Quebras intermediárias ocorrem em vírgulas ou após 4 a 6 palavras se ultrapassar 2.0 segundos de tela.
-     * Cada bloco de legenda permanece na tela exatamente enquanto a respectiva frase está sendo narrada.
-  3. Sincronização fonética com `Faster-Whisper` utilizando `initial_prompt` do roteiro original para 100% de precisão vocabular.
+  2. Eliminar 100% dos efeitos de destaque palavra por palavra (karaokê pop) e tags `\fscx` / `\c` pulando na tela.
+  3. Implementar **Agrupador Sintático e Tempo de Leitura Natural**:
+     * Quebra de linhas estritamente por orações gramaticais e pontuação (`.`, `,`, `?`, `!`, `:`, `;`).
+     * Exibição estática, limpa e legível de frases completas (1 a 2 linhas com no máximo 35 a 42 caracteres por linha).
+     * Duração de tela calculada a partir do timestamp fonético inicial da primeira palavra até o término da última palavra da oração, garantindo tempo de permanência mínimo confortável para leitura humana.
+  4. Selecionar e configurar a **Melhor Tipografia Cinematográfica de Documentário**:
+     * Fonte sans-serif limpa e sofisticada (Montserrat / Inter / Trebuchet / Segoe UI Semibold).
+     * Renderização elegante: cor branca pura (`&H00FFFFFF&`), contorno fino suave (`Outline=2`) e sombra difusa profunda para máxima legibilidade sobre qualquer imagem clara ou escura.
+  5. Sincronização fonética com `Faster-Whisper` utilizando `initial_prompt` do roteiro original para fidelidade vocabular estrita.
 * **Quality Gate (Critério de Aceite):**
-  - Inspeção manual do arquivo `.ass` gerado: nenhuma linha deve conter a última palavra de uma frase e o início da frase seguinte.
-  - O início e o fim de cada bloco visual devem coincidir exatamente com os limites de fala do narrador.
+  - O arquivo `.ass` gerado não contém tags de efeito karaokê.
+  - Frases inteiras aparecem e permanecem na tela enquanto a locução ocorre, trocando suavemente apenas quando a oração termina.
+  - Nenhuma legenda corta uma frase ao meio ou mistura o fim de uma oração com o início de outra.
 
 ---
 
@@ -140,7 +145,7 @@ O objetivo deste projeto não é criar um "slideshow automatizado com voz robót
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Fase 1** | Integração 9router (`localhost:20128`) | ✅ Concluída | 14/10/2026 20:49 | 14/10/2026 20:53 | Gating Test aprovado: 30s (3 cenas, 65 palavras) e 60s (6 cenas, 154 palavras). Conexão `arsenal` operacional. |
 | **Fase 2** | Motor de Voz Local / F5-TTS / Kokoro & Voice Bank | ✅ Concluída | 14/10/2026 20:56 | 14/10/2026 21:02 | Gating Test aprovado: 8 perfis no Voice Bank. Clonagem GPU (6.82s) e narrador solene (6.41s) gerados a 48kHz. |
-| **Fase 3** | Legendas Sintáticas por Pontuação | ⏳ Pendente | — | — | — |
+| **Fase 3** | Legendas Cinematográficas & Leitura Natural | ✅ Concluída | 14/10/2026 21:06 | 14/10/2026 21:08 | Gating Test aprovado: zero tags karaokê, agrupamento sintático por pontuação (. ,), Segoe UI e leitura natural. |
 | **Fase 4** | Visual Híbrido e Templates Remotion | ⏳ Pendente | — | — | — |
 | **Fase 5** | Duração Parametrizada (30s / 60s) | ⏳ Pendente | — | — | — |
 | **Fase 6** | Teste de Bancada 30s & Auditoria | ⏳ Pendente | — | — | — |

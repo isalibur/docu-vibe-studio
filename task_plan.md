@@ -33,11 +33,13 @@ Transformar o pipeline de vídeo em uma **esteira de produção cinematográfica
 - [x] **Gating Test 2:** Sintetizar áudio de teste de 30s e validar tom humano, ausência de aceleração e clareza acústica.
 - [x] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
 
-### Fase 3: Legendas com Agrupamento Sintático
-- [ ] Refatorar `src/stage3_captions/ass_generator.py` para agrupar por cláusulas e pontuação (`.`, `,`, `?`, `!`), abolindo o bloco fixo de 4 palavras.
-- [ ] Validar sincronização com `Faster-Whisper` guiado pelo roteiro original.
-- [ ] **Gating Test 3:** Verificar arquivo `.ass` e garantir que nenhuma frase termine cortada no meio de um bloco na tela.
-- [ ] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
+### Fase 3: Legendas com Agrupamento Sintático & Leitura Natural
+- [x] Refatorar `src/stage3_captions/ass_generator.py` para agrupar por cláusulas e pontuação (`.`, `,`, `?`, `!`), abolindo o bloco fixo de 4 palavras.
+- [x] Eliminar efeito karaokê pop e tags de animação visual pulando na tela.
+- [x] Implementar tipografia Segoe UI cinematográfica com leitura natural e balanceamento de linhas.
+- [x] Validar sincronização com `Faster-Whisper` guiado pelo roteiro original.
+- [x] **Gating Test 3:** Verificar arquivo `.ass` e garantir que nenhuma frase termine cortada no meio de um bloco na tela.
+- [x] **Atualizar Guardião:** Registrar métricas e status no `GUARDIAN_EXECUTION_PLAN.md`.
 
 ### Fase 4: Diretor Visual Híbrido e Templates Remotion
 - [ ] Conectar os templates `DocumentaryParallax.tsx`, `NewspaperHighlight.tsx` e `DataChartCard.tsx` no fluxo do orquestrador `main.py`.
