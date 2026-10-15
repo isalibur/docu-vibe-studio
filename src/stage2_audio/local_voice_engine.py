@@ -37,6 +37,8 @@ class VoiceProfile:
     description: str = ""
 
 
+from src.stage2_audio.text_normalizer import TextNormalizer
+
 class VoiceBank:
     """Gerencia e descobre dinamicamente todos os perfis de voz disponíveis."""
 
@@ -48,25 +50,19 @@ class VoiceBank:
     def list_profiles(self) -> List[VoiceProfile]:
         profiles: Dict[str, VoiceProfile] = {}
 
-        # 1. Presets Neurais de Primeira Classe (Documentário / História)
+        # 1. Presets Neurais Brasileiros de Primeira Classe (Documentário / História em PT-BR)
         presets = [
             VoiceProfile(
-                id="pt-PT-DuarteNeural",
-                name="Duarte (Narrador Histórico Clássico / BBC Gravitas)",
-                voice_type="neural_preset",
-                description="Voz masculina profunda, solene e com grande peso narrativo histórico."
-            ),
-            VoiceProfile(
                 id="pt-BR-ThalitaMultilingualNeural",
-                name="Thalita (Narradora Moderna / Documentário Contemporâneo)",
+                name="Thalita (Narradora Brasileira / Documentário Cinematográfico)",
                 voice_type="neural_preset",
-                description="Voz feminina expressiva, cinematográfica e de excelente articulação."
+                description="Voz feminina brasileira profunda, cinematográfica e de excelente articulação."
             ),
             VoiceProfile(
                 id="pt-BR-FranciscaNeural",
-                name="Francisca (Jornalística / Investigativa)",
+                name="Francisca (Jornalística Brasileira / Investigativa)",
                 voice_type="neural_preset",
-                description="Voz formal, firme e investigativa para denúncias e dados."
+                description="Voz formal, firme e investigativa em português brasileiro."
             )
         ]
         for p in presets:
@@ -140,9 +136,10 @@ class LocalVoiceEngine:
         Converte o áudio final para WAV 48kHz mono sem perdas.
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        clean_text = text.strip()
+        clean_text = TextNormalizer.normalize_for_speech(text.strip())
         if not clean_text:
             raise ValueError("Texto para narração não pode ser vazio.")
+        logger.info("Texto normalizado para fala: '%s'", clean_text)
 
         # Identifica perfil solicitado ou usa padrão
         profile = None
